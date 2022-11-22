@@ -25,66 +25,57 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     // Set all branches to 0
     tin->SetBranchStatus("*", 0);
     // get the pt
-    Float_t Muon_pt[MAX_ARRAY_SIZE], Electron_pt[MAX_ARRAY_SIZE], Jet_pt[MAX_ARRAY_SIZE];
+    Float_t Tau_pt[MAX_ARRAY_SIZE], Electron_pt[MAX_ARRAY_SIZE], Jet_pt[MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Electron_pt", 1);
     tin->SetBranchAddress("Electron_pt", &Electron_pt);
-    tin->SetBranchStatus("Muon_pt", 1);
-    tin->SetBranchAddress("Muon_pt", &Muon_pt);
+    tin->SetBranchStatus("Tau_pt", 1);
+    tin->SetBranchAddress("Tau_pt", &Tau_pt);
     tin->SetBranchStatus("Jet_pt", 1);
     tin->SetBranchAddress("Jet_pt", &Jet_pt);
-    // get the number of muons, electrons
-    UInt_t nMuon, nElectron;
+    // get the number of Taus, electrons
+    UInt_t nTau, nElectron;
     tin->SetBranchStatus("nElectron", 1);
     tin->SetBranchAddress("nElectron", &nElectron);
-    tin->SetBranchStatus("nMuon", 1);
-    tin->SetBranchAddress("nMuon", &nMuon);
+    tin->SetBranchStatus("nTau", 1);
+    tin->SetBranchAddress("nTau", &nTau);
     // get the eta
-    Float_t Muon_eta[MAX_ARRAY_SIZE], Electron_eta[MAX_ARRAY_SIZE], Jet_eta[MAX_ARRAY_SIZE];
+    Float_t Tau_eta[MAX_ARRAY_SIZE], Electron_eta[MAX_ARRAY_SIZE], Jet_eta[MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Electron_eta", 1);
     tin->SetBranchAddress("Electron_eta", &Electron_eta);
-    tin->SetBranchStatus("Muon_eta", 1);
-    tin->SetBranchAddress("Muon_eta", &Muon_eta);
+    tin->SetBranchStatus("Tau_eta", 1);
+    tin->SetBranchAddress("Tau_eta", &Tau_eta);
     tin->SetBranchStatus("Jet_eta", 1);
     tin->SetBranchAddress("Jet_eta", &Jet_eta);
     // get the phi
-    Float_t Muon_phi[MAX_ARRAY_SIZE], Electron_phi[MAX_ARRAY_SIZE], Jet_phi[MAX_ARRAY_SIZE];
+    Float_t Tau_phi[MAX_ARRAY_SIZE], Electron_phi[MAX_ARRAY_SIZE], Jet_phi[MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Electron_phi", 1);
     tin->SetBranchAddress("Electron_phi", &Electron_phi);
-    tin->SetBranchStatus("Muon_phi", 1);
-    tin->SetBranchAddress("Muon_phi", &Muon_phi);
+    tin->SetBranchStatus("Tau_phi", 1);
+    tin->SetBranchAddress("Tau_phi", &Tau_phi);
     tin->SetBranchStatus("Jet_phi", 1);
     tin->SetBranchAddress("Jet_phi", &Jet_phi);
     // get the mass
-    Float_t Muon_mass[MAX_ARRAY_SIZE], Electron_mass[MAX_ARRAY_SIZE], Jet_mass[MAX_ARRAY_SIZE];
+    Float_t Tau_mass[MAX_ARRAY_SIZE], Electron_mass[MAX_ARRAY_SIZE], Jet_mass[MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Electron_mass", 1);
     tin->SetBranchAddress("Electron_mass", &Electron_mass);
-    tin->SetBranchStatus("Muon_mass", 1);
-    tin->SetBranchAddress("Muon_mass", &Muon_mass);
+    tin->SetBranchStatus("Tau_mass", 1);
+    tin->SetBranchAddress("Tau_mass", &Tau_mass);
     tin->SetBranchStatus("Jet_mass", 1);
     tin->SetBranchAddress("Jet_mass", &Jet_mass);
 
     // collect the trigger information
-    Bool_t HLT_IsoMu24, HLT_Ele32_WPTight_Gsf;
-    tin->SetBranchStatus("HLT_IsoMu24", 1);
+    Bool_t  HLT_Ele32_WPTight_Gsf;
     tin->SetBranchStatus("HLT_Ele32_WPTight_Gsf", 1);
-    tin->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu24);
     tin->SetBranchAddress("HLT_Ele32_WPTight_Gsf", &HLT_Ele32_WPTight_Gsf);
 
     // collect the triggger Ids
-    Int_t Muon_charge[MAX_ARRAY_SIZE], Electron_charge[MAX_ARRAY_SIZE];
-    Bool_t Electron_mvaFall17V2Iso_WP90[MAX_ARRAY_SIZE], Muon_triggerIdLoose[MAX_ARRAY_SIZE], Muon_tightId[MAX_ARRAY_SIZE];
-    Float_t Muon_pfRelIso04_all[MAX_ARRAY_SIZE];
-    tin->SetBranchStatus("Muon_tightId", 1);
-    tin->SetBranchStatus("Muon_charge", 1);
-    tin->SetBranchStatus("Muon_triggerIdLoose", 1);
-    tin->SetBranchStatus("Muon_pfRelIso04_all", 1);
+    Int_t Tau_charge[MAX_ARRAY_SIZE], Electron_charge[MAX_ARRAY_SIZE];
+    Bool_t Electron_mvaFall17V2Iso_WP90[MAX_ARRAY_SIZE];
+    tin->SetBranchStatus("Tau_charge", 1);
     tin->SetBranchStatus("Electron_charge", 1);
     tin->SetBranchStatus("Electron_mvaFall17V2Iso_WP90", 1);
     tin->SetBranchAddress("Electron_mvaFall17V2Iso_WP90", &Electron_mvaFall17V2Iso_WP90);
-    tin->SetBranchAddress("Muon_tightId", &Muon_tightId);
-    tin->SetBranchAddress("Muon_charge", &Muon_charge);
-    tin->SetBranchAddress("Muon_triggerIdLoose", &Muon_triggerIdLoose);
-    tin->SetBranchAddress("Muon_pfRelIso04_all", &Muon_pfRelIso04_all);
+    tin->SetBranchAddress("Tau_charge", &Tau_charge);
     tin->SetBranchAddress("Electron_charge", &Electron_charge);
 
     // Jet tagging , FlavB is the recomennded one, DeepB was used by Anup
@@ -102,18 +93,32 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     tin->SetBranchAddress("Jet_jetId", &Jet_jetId);
     tin->SetBranchAddress("Jet_puId", &Jet_puId);
 
-    int non_matching_muon = 0, non_matching_electron = 0;
+
+    UChar_t Tau_idDeepTau2017v2p1VSmu[MAX_ARRAY_SIZE],Tau_idDeepTau2017v2p1VSjet[MAX_ARRAY_SIZE], Tau_idDeepTau2017v2p1VSe[MAX_ARRAY_SIZE];
+    Int_t Tau_decayMode[MAX_ARRAY_SIZE];
+
+    tin->SetBranchStatus("Tau_idDeepTau2017v2p1VSmu", 1);
+    tin->SetBranchStatus("Tau_idDeepTau2017v2p1VSjet", 1);
+    tin->SetBranchStatus("Tau_idDeepTau2017v2p1VSe", 1);
+    tin->SetBranchStatus("Tau_decayMode", 1);
+    tin->SetBranchAddress("Tau_decayMode", &Tau_decayMode);
+    tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSmu", &Tau_idDeepTau2017v2p1VSmu);
+    tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSjet", &Tau_idDeepTau2017v2p1VSjet);   
+    tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSe", &Tau_idDeepTau2017v2p1VSe);
+
+
+    int non_matching_Tau = 0, non_matching_electron = 0;
     int n_dropped = 0;
     int trigger_dropped = 0,crosstrigger=0;
     const auto nEv = tin->GetEntries();
-    TLorentzVector *Muon_p4 = new TLorentzVector();
+    TLorentzVector *Tau_p4 = new TLorentzVector();
     TLorentzVector *Electron_p4 = new TLorentzVector();
     TLorentzVector *MainBjet_p4 = new TLorentzVector();
     TLorentzVector *OppositeBjet_p4 = new TLorentzVector();
 
        // allow pt, inv mass, and eta to be stored in a Branch
-    Float_t leading_lepton_pt, invMass, electron_eta, electron_pt, muon_eta, muon_pt;
-    Float_t muon_eta_from_W, muon_pt_from_W, electron_eta_from_W, electron_pt_from_W;
+    Float_t leading_lepton_pt, invMass, electron_eta, electron_pt, Tau_eta, Tau_pt;
+    Float_t Tau_eta_from_W, Tau_pt_from_W, electron_eta_from_W, electron_pt_from_W;
     TFile *fout =new TFile(ofile.c_str(),"RECREATE");
     // create a new tree for the output
     TTree *tout = new TTree("tout","tout");
@@ -122,11 +127,11 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     tout->Branch("invMass", &invMass);
     tout->Branch("electron_eta", &electron_eta);
     tout->Branch("electron_pt", &electron_pt);
-    tout->Branch("muon_eta", &muon_eta);
-    tout->Branch("muon_pt", &muon_pt);
+    tout->Branch("Tau_eta", &Tau_eta);
+    tout->Branch("Tau_pt", &Tau_pt);
 
-    int Nloose = 0, Nmedium = 0, Ntight = 0, JetsNotB=0;
-    float dR_muE,dR_mujet,dR_ejet,dR_allJets,dR_lbJets,dR_mbJets,Apl_allJets,Apl_lbJets,Apl_mbJets,Phi_allJets,Phi_lbJets,Phi_mbJets, PTbjet,Acopl_emu;
+    int Nloose = 0, Nmedium = 0, Ntight = 0, JetsNotB=0, Nprongs=0;
+    float dR_muE, dR_mujet, dR_ejet, dR_allJets, dR_lbJets, dR_mbJets, Apl_allJets, Apl_lbJets, Apl_mbJets, Phi_allJets, Phi_lbJets, Phi_mbJets, PTbjet, Acopl_emu;
 
     tout->Branch("dR_mue", &dR_muE);
     tout->Branch("dR_mujet", &dR_mujet);
@@ -146,9 +151,8 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     tout->Branch("Ntight", &Ntight);
     tout->Branch("JetNotB", &JetsNotB);
     tout->Branch("Acopl_emu", &Acopl_emu);
+    tout->Branch("Nprongs", &Nprongs);
 
-    RoccoR rc;
-    rc.init("/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/roccor/RoccoR2018UL.txt");
     #pragma omp parallel for
     for (UInt_t i = 0; i < nEv; i++)
     {
@@ -157,38 +161,34 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
             std::cout << "Processing entry " << i << " of " << nEv << std::endl;
         // apply triggers
 
-        if (!(HLT_IsoMu24 || HLT_Ele32_WPTight_Gsf))
-        {
-            trigger_dropped++;
-            continue;
-        };
+        if (!(HLT_Ele32_WPTight_Gsf))
+        { trigger_dropped++; continue; };
 
         // avoid cross triggers
-        if (!IsFirstDataSet && HLT_Ele32_WPTight_Gsf && HLT_IsoMu24)
-        {
-            crosstrigger++;
-            continue;
-        }
+        /*if (!IsFirstDataSet && HLT_Ele32_WPTight_Gsf && HLT_IsoMu24)
+        {crosstrigger++;  continue;}*/
 
-        // loop over the muons and electrons and only keep the fist ones that pass the requirements
-        Int_t muon_idx = -1;
-        for (UInt_t j = 0; j < nMuon; j++){
-            if ((Muon_pt[j]>27. && abs(Muon_eta[j])<2.4 && Muon_tightId[j] && Muon_pfRelIso04_all[j] < 0.15)){
-                muon_idx = j;
-                Muon_p4->SetPtEtaPhiM(Muon_pt[j], Muon_eta[j], Muon_phi[j], Muon_mass[j]);
+        // loop over the Taus and electrons and only keep the fist ones that pass the requirements
+	bool OneProng=false, ThreeProng=false;
+        Int_t Tau_idx = -1;
+        for (UInt_t j = 0; j < nTau; j++){
+            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=16)){ //VLoose e- Tight mu Medium jet
+		if (Tau_decayMode[j]<=2) {OneProng=true;}
+		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
+		if (!OneProng && !ThreeProng) {continue;}
+                Tau_idx = j;
+                Tau_p4->SetPtEtaPhiM(Tau_pt[j], Tau_eta[j], Tau_phi[j], Tau_mass[j]);
                 break;
             }
         }
-        if (muon_idx==-1) {
-            n_dropped++;
-            continue;
-        }
+        if (Tau_idx==-1) {n_dropped++; continue; }
+
         Int_t electron_idx = -1;
         for (UInt_t j = 0; j < nElectron; j++){
             if ((Electron_pt[j]>35 && abs(Electron_eta[j])<2.4 && Electron_mvaFall17V2Iso_WP90[j])){
-		if((abs(Electron_eta[j])>1.44) && (abs(Electron_eta[j])<1.57)) {continue;} //remove electrons in the acceptance break
+		if((abs(Electron_eta[j])>1.44) && (abs(Electron_eta[j])<1.57)) {continue;}
                 Electron_p4->SetPtEtaPhiM(Electron_pt[j], Electron_eta[j], Electron_phi[j], Electron_mass[j]);
-		if(Electron_p4->DeltaR(*Muon_p4)<0.4) {continue;}
+		if(Electron_p4->DeltaR(*Tau_p4)<0.4) {continue;}
                 else {electron_idx = j; break;}
             }
         }
@@ -196,9 +196,10 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
             n_dropped++;
             continue;
         }
-        bool selection = ((muon_idx > -1) && (electron_idx > -1));
+        bool selection = ((Tau_idx > -1) && (electron_idx > -1));
         // check the seleected objects for opposite charge
-        selection = selection && (Muon_charge[muon_idx] * Electron_charge[electron_idx]) < 0;
+        selection = selection && (Tau_charge[Tau_idx] * Electron_charge[electron_idx]) < 0;
+        
         // the tight working point is 0.71, medium 0.2783, loose 0.0490
         Float_t jet_btag_deepFlav_wp = 0.2783;
         bool one_Bjet = false;
@@ -218,7 +219,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 			MainBjet_p4->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
 			OppositeBjet_p4->SetPtEtaPhiM(Jet_pt[j], -1*Jet_eta[j], InvertPhi(Jet_phi[j]), Jet_mass[j]);
 				
-			if ( MainBjet_p4->DeltaR(*Muon_p4)>0.4 && MainBjet_p4->DeltaR(*Electron_p4)>0.4){
+			if ( MainBjet_p4->DeltaR(*Tau_p4)>0.4 && MainBjet_p4->DeltaR(*Electron_p4)>0.4){
                 		one_Bjet = true; id_m_jet=j;
 				}
                 	}	
@@ -226,12 +227,14 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 	  }//end kinematic if
         }
         selection = selection && (one_Bjet);
-
+	//TODO: BIG IF depending on Nprongs
+	//TODO: valuta se tenere sti histo qui
         h_LooseJets->Fill(Nloose);
         h_MediumJets->Fill(Nmedium);
         h_TightJets->Fill(Ntight);
-        Acopl_emu=M_PI-(Electron_p4->DeltaPhi(*Muon_p4));
+	Acopl_emu=M_PI-(Electron_p4->DeltaPhi(*Tau_p4));
         h_acopla_emu->Fill(Acopl_emu);
+        
 
         if (!selection)
         {
@@ -240,38 +243,33 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
         }
         PTbjet=MainBjet_p4->Pt();
 
-	double scmDT=rc.kScaleDT(Muon_charge[muon_idx],Muon_pt[muon_idx],Muon_eta[muon_idx],Muon_phi[muon_idx]);
-        Muon_pt[muon_idx]*= scmDT;
-	Muon_p4->SetPtEtaPhiM(Muon_pt[muon_idx], Muon_eta[muon_idx], Muon_phi[muon_idx], Muon_mass[muon_idx]);
-        
-
-        dR_mujet=Muon_p4->DeltaR(*MainBjet_p4);
+        dR_mujet=Tau_p4->DeltaR(*MainBjet_p4);
 	dR_ejet=Electron_p4->DeltaR(*MainBjet_p4);
-	dR_muE=Muon_p4->DeltaR(*Electron_p4);
+	dR_muE=Tau_p4->DeltaR(*Electron_p4);
 
-        // check whether muon or electron is the leading one
-        if (Muon_p4->Pt() > Electron_p4->Pt()){
+        // check whether Tau or electron is the leading one
+        if (Tau_p4->Pt() > Electron_p4->Pt()){
             // fill the hist
-            leading_lepton_pt = Muon_p4->Pt();  
+            leading_lepton_pt = Tau_p4->Pt();  
         } else {
             leading_lepton_pt = Electron_p4->Pt();
             
         }
         h_leading_lepton_pt->Fill(leading_lepton_pt);
         // fill the histograms
-        muon_pt = Muon_pt[muon_idx];
-        muon_eta = Muon_eta[muon_idx];
+        Tau_pt = Tau_pt[Tau_idx];
+        Tau_eta = Tau_eta[Tau_idx];
         electron_pt = Electron_pt[electron_idx];
         electron_eta = Electron_eta[electron_idx];
 
-        h_Muon_pt->Fill(muon_pt);
-        h_Muon_eta->Fill(muon_eta);
+        h_Tau_pt->Fill(Tau_pt);
+        h_Tau_eta->Fill(Tau_eta);
 
         h_Electron_pt->Fill(electron_pt);
         h_Electron_eta->Fill(electron_eta);
 
-	h_Muon_pt_weighted->Fill(muon_pt);
-        h_Muon_eta_weighted->Fill(muon_eta);
+	h_Tau_pt_weighted->Fill(Tau_pt);
+        h_Tau_eta_weighted->Fill(Tau_eta);
 
         h_Electron_pt_weighted->Fill(electron_pt);
         h_Electron_eta_weighted->Fill(electron_eta);
@@ -326,11 +324,11 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
         	}//end for
 
 
-        if (muon_idx > -1 && electron_idx > -1)
+        if (Tau_idx > -1 && electron_idx > -1)
         {
-            invMass = (*(Muon_p4) + *(Electron_p4)).M();
-            h_Muon_Electron_invariant_mass->Fill(invMass);
-	    h_Muon_Electron_invariant_mass_weighted->Fill(invMass);
+            invMass = (*(Tau_p4) + *(Electron_p4)).M();
+            h_Tau_Electron_invariant_mass->Fill(invMass);
+	    h_Tau_Electron_invariant_mass_weighted->Fill(invMass);
         }
 	tout->Fill();
     }
@@ -345,20 +343,9 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     int Rem_trigger=NumbEv-trigger_dropped; //remember the cross trigger in Data
     std::cout << "Fraction of events removed by selections = " << (n_dropped * 1. / Rem_trigger) << endl;
     std::cout << "Final number of events "<< Rem_trigger - n_dropped<<endl;
+
     // Write the histograms to the file
-    h_Muon_eta_weighted->Write();
-    h_Muon_pt_weighted->Write();
-
-    h_Electron_eta_weighted->Write();
-    h_Electron_pt_weighted->Write();
-
-    h_Muon_Electron_invariant_mass_weighted->Write();
-    h_leading_lepton_pt_weighted->Write();
-    h_LooseJets->Write();
-    h_MediumJets->Write();
-    h_TightJets->Write();
-    h_acopla_emu->Write();
-    h_NJets->Write();
+    HistWrite();
 
     fout->Write();
     fout->Close();
@@ -372,49 +359,8 @@ int main(int argc, char **argv)
     bool IsFirstDataset= (boolstr=="true")||(boolstr=="True");
     if (IsFirstDataset) {std::cout<<"############## It is first dataset! ##################"<<std::endl;}
     if (!IsFirstDataset) {std::cout<<"@@@@@@@@@@@@@@ NOT first dataset! @@@@@@@@@@@@@@@@@@"<<std::endl;}
-
-    h_Muon_pt->Sumw2();
-    h_Muon_eta->Sumw2();
-    h_Electron_pt->Sumw2();
-    h_Electron_eta->Sumw2();
-    h_Muon_pt_weighted->Sumw2();
-    h_Muon_eta_weighted->Sumw2();
-    h_Electron_pt_weighted->Sumw2();
-    h_Electron_eta_weighted->Sumw2();
-    h_Muon_pt_from_W->Sumw2();
-    h_Muon_eta_from_W->Sumw2();
-    h_Electron_pt_from_W->Sumw2();
-    h_Electron_eta_from_W->Sumw2();
-    h_Muon_pt_weighted_from_W->Sumw2();
-    h_Muon_eta_weighted_from_W->Sumw2();
-    h_Electron_pt_weighted_from_W->Sumw2();
-    h_Electron_eta_weighted_from_W->Sumw2();
-    h_Muon_pt_trigger->Sumw2();
-    h_Muon_eta_trigger->Sumw2();
-    h_Electron_pt_trigger->Sumw2();
-    h_Electron_eta_trigger->Sumw2();
-    h_Muon_Electron_invariant_mass->Sumw2();
-    h_Muon_Muon_invariant_mass->Sumw2();
-    h_Electron_Electron_invariant_mass->Sumw2();
-    h_Muon_Electron_invariant_mass_weighted->Sumw2();
-    h_Muon_Muon_invariant_mass_weighted->Sumw2();
-    h_Electron_Electron_invariant_mass_weighted->Sumw2();
-    h_leading_lepton_pt->Sumw2();
-    h_leading_lepton_pt_weighted->Sumw2();
-    h_LooseJets->Sumw2();
-    h_MediumJets->Sumw2();
-    h_TightJets->Sumw2();
-	h_dR_allJets->Sumw2();
-	h_dR_lbJets->Sumw2();
-	h_dR_mbJets ->Sumw2();
-      h_Apl_allJets->Sumw2();
-	h_Apl_lbJets->Sumw2();
-	h_Apl_mbJets->Sumw2();
-	h_Phi_allJets->Sumw2();
-	h_Phi_lbJets->Sumw2();
-	h_Phi_mbJets->Sumw2();
-	h_acopla_emu->Sumw2();
-	h_NJets->Sumw2();
+	
+    HistIniz();
 
     DataAnalysis(inputFile, outputFile, IsFirstDataset);
 }
