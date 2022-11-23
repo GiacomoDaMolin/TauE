@@ -117,7 +117,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     TLorentzVector *OppositeBjet_p4 = new TLorentzVector();
 
        // allow pt, inv mass, and eta to be stored in a Branch
-    Float_t leading_lepton_pt, invMass, electron_eta, electron_pt, Tau_eta, Tau_pt;
+    Float_t leading_lepton_pt, invMass, electron_eta, electron_pt, tau_eta, tau_pt;
     Float_t Tau_eta_from_W, Tau_pt_from_W, electron_eta_from_W, electron_pt_from_W;
     TFile *fout =new TFile(ofile.c_str(),"RECREATE");
     // create a new tree for the output
@@ -127,11 +127,11 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     tout->Branch("invMass", &invMass);
     tout->Branch("electron_eta", &electron_eta);
     tout->Branch("electron_pt", &electron_pt);
-    tout->Branch("Tau_eta", &Tau_eta);
-    tout->Branch("Tau_pt", &Tau_pt);
+    tout->Branch("tau_eta", &tau_eta);
+    tout->Branch("tau_pt", &tau_pt);
 
     int Nloose = 0, Nmedium = 0, Ntight = 0, JetsNotB=0, Nprongs=0;
-    float dR_muE, dR_mujet, dR_ejet, dR_allJets, dR_lbJets, dR_mbJets, Apl_allJets, Apl_lbJets, Apl_mbJets, Phi_allJets, Phi_lbJets, Phi_mbJets, PTbjet, Acopl_emu;
+    float dR_muE, dR_mujet, dR_ejet, dR_allJets, dR_lbJets, dR_mbJets, Apl_allJets, Apl_lbJets, Apl_mbJets, Phi_allJets, Phi_lbJets, Phi_mbJets, PTbjet, Acopl_etau;
 
     tout->Branch("dR_mue", &dR_muE);
     tout->Branch("dR_mujet", &dR_mujet);
@@ -150,7 +150,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     tout->Branch("Nmedium", &Nmedium);
     tout->Branch("Ntight", &Ntight);
     tout->Branch("JetNotB", &JetsNotB);
-    tout->Branch("Acopl_emu", &Acopl_emu);
+    tout->Branch("Acopl_etau", &Acopl_etau);
     tout->Branch("Nprongs", &Nprongs);
 
     #pragma omp parallel for
@@ -175,7 +175,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
             if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=16)){ //VLoose e- Tight mu Medium jet
 		if (Tau_decayMode[j]<=2) {OneProng=true;}
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
-		if (!OneProng && !ThreeProng) {continue;}
+		if (!(OneProng || ThreeProng)) {continue;}
                 Tau_idx = j;
                 Tau_p4->SetPtEtaPhiM(Tau_pt[j], Tau_eta[j], Tau_phi[j], Tau_mass[j]);
                 break;
@@ -227,53 +227,68 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 	  }//end kinematic if
         }
         selection = selection && (one_Bjet);
-	//TODO: BIG IF depending on Nprongs
-	//TODO: valuta se tenere sti histo qui
-        h_LooseJets->Fill(Nloose);
-        h_MediumJets->Fill(Nmedium);
-        h_TightJets->Fill(Ntight);
-	Acopl_emu=M_PI-(Electron_p4->DeltaPhi(*Tau_p4));
-        h_acopla_emu->Fill(Acopl_emu);
-        
+
+	Acopl_etau=M_PI-(Electron_p4->DeltaPhi(*Tau_p4));
+
+	if(OneProng){
+		h_LooseJets_p1->Fill(Nloose);
+		h_MediumJets_p1->Fill(Nmedium);
+		h_TightJets_p1->Fill(Ntight);
+		h_acopla_etau_p1->Fill(Acopl_etau);
+		}
+        if(ThreeProng){
+		h_LooseJets_p3->Fill(Nloose);
+		h_MediumJets_p3->Fill(Nmedium);
+		h_TightJets_p3->Fill(Ntight);
+		h_acopla_etau_p3->Fill(Acopl_etau);
+		}
 
         if (!selection)
         {
             n_dropped++;
             continue;
         }
+	if(OneProng) {Nprongs=1;}
+	if(ThreeProng) {Nprongs=3;}
         PTbjet=MainBjet_p4->Pt();
 
         dR_mujet=Tau_p4->DeltaR(*MainBjet_p4);
 	dR_ejet=Electron_p4->DeltaR(*MainBjet_p4);
 	dR_muE=Tau_p4->DeltaR(*Electron_p4);
-
-        // check whether Tau or electron is the leading one
-        if (Tau_p4->Pt() > Electron_p4->Pt()){
-            // fill the hist
-            leading_lepton_pt = Tau_p4->Pt();  
-        } else {
-            leading_lepton_pt = Electron_p4->Pt();
-            
-        }
-        h_leading_lepton_pt->Fill(leading_lepton_pt);
-        // fill the histograms
-        Tau_pt = Tau_pt[Tau_idx];
-        Tau_eta = Tau_eta[Tau_idx];
+	// fill the tree
+        tau_pt = Tau_pt[Tau_idx];
+        tau_eta = Tau_eta[Tau_idx];
         electron_pt = Electron_pt[electron_idx];
         electron_eta = Electron_eta[electron_idx];
 
-        h_Tau_pt->Fill(Tau_pt);
-        h_Tau_eta->Fill(Tau_eta);
+        // check whether Tau or electron is the leading one
+        if (Tau_p4->Pt() > Electron_p4->Pt())	{leading_lepton_pt = Tau_p4->Pt();}
+	else					{leading_lepton_pt = Electron_p4->Pt();}
 
-        h_Electron_pt->Fill(electron_pt);
-        h_Electron_eta->Fill(electron_eta);
-
-	h_Tau_pt_weighted->Fill(Tau_pt);
-        h_Tau_eta_weighted->Fill(Tau_eta);
-
-        h_Electron_pt_weighted->Fill(electron_pt);
-        h_Electron_eta_weighted->Fill(electron_eta);
-	h_NJets->Fill(njets);
+	if(OneProng){
+		h_leading_lepton_pt_p1->Fill(leading_lepton_pt);
+		h_Tau_pt_p1->Fill(tau_pt);
+		h_Tau_eta_p1->Fill(tau_eta);
+		h_Electron_pt_p1->Fill(electron_pt);
+		h_Electron_eta_p1->Fill(electron_eta);
+		h_Tau_pt_weighted_p1->Fill(tau_pt);
+		h_Tau_eta_weighted_p1->Fill(tau_eta);
+		h_Electron_pt_weighted_p1->Fill(electron_pt);
+		h_Electron_eta_weighted_p1->Fill(electron_eta);
+		h_NJets_p1->Fill(njets);
+		}
+	if(ThreeProng){
+		h_leading_lepton_pt_p3->Fill(leading_lepton_pt);
+		h_Tau_pt_p3->Fill(tau_pt);
+		h_Tau_eta_p3->Fill(tau_eta);
+		h_Electron_pt_p3->Fill(electron_pt);
+		h_Electron_eta_p3->Fill(electron_eta);
+		h_Tau_pt_weighted_p3->Fill(tau_pt);
+		h_Tau_eta_weighted_p3->Fill(tau_eta);
+		h_Electron_pt_weighted_p3->Fill(electron_pt);
+		h_Electron_eta_weighted_p3->Fill(electron_eta);
+		h_NJets_p3->Fill(njets);
+		}
 
         
 	dR_allJets=999, dR_lbJets=999, dR_mbJets=999;
@@ -327,8 +342,14 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
         if (Tau_idx > -1 && electron_idx > -1)
         {
             invMass = (*(Tau_p4) + *(Electron_p4)).M();
-            h_Tau_Electron_invariant_mass->Fill(invMass);
-	    h_Tau_Electron_invariant_mass_weighted->Fill(invMass);
+	    if(OneProng){
+		    h_Tau_Electron_invariant_mass_p1->Fill(invMass);
+		    h_Tau_Electron_invariant_mass_weighted_p1->Fill(invMass);
+		    }
+	    if(ThreeProng){
+		    h_Tau_Electron_invariant_mass_p3->Fill(invMass);
+		    h_Tau_Electron_invariant_mass_weighted_p3->Fill(invMass);
+		    }
         }
 	tout->Fill();
     }

@@ -101,7 +101,6 @@ cout<<"Call completed!"<<endl;
     Int_t GenPart_pdgId[GEN_MAX_ARRAY_SIZE], GenPart_genPartIdxMother[GEN_MAX_ARRAY_SIZE], Jet_genJetIdx[MAX_ARRAY_SIZE];
     UChar_t Tau_genPartFlav[MAX_ARRAY_SIZE], Electron_genPartFlav[MAX_ARRAY_SIZE];
     UInt_t nGenPart;
-    Float_t GenPart_pt[GEN_MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Electron_genPartIdx", 1);
     tin->SetBranchStatus("Electron_genPartFlav", 1);
     tin->SetBranchStatus("Tau_genPartIdx", 1);
@@ -110,7 +109,6 @@ cout<<"Call completed!"<<endl;
     tin->SetBranchStatus("GenPart_genPartIdxMother", 1);
     tin->SetBranchStatus("nGenPart", 1);
     tin->SetBranchStatus("Jet_genJetIdx",1);
-    tin->SetBranchStatus("GenPart_pt",1);
     tin->SetBranchAddress("nGenPart", &nGenPart);
     tin->SetBranchAddress("Electron_genPartIdx", &Electron_genPartIdx);
     tin->SetBranchAddress("Electron_genPartFlav", &Electron_genPartFlav);
@@ -119,32 +117,20 @@ cout<<"Call completed!"<<endl;
     tin->SetBranchAddress("GenPart_pdgId", &GenPart_pdgId);
     tin->SetBranchAddress("GenPart_genPartIdxMother", &GenPart_genPartIdxMother);
     tin->SetBranchAddress("Jet_genJetIdx",&Jet_genJetIdx);
-    tin->SetBranchAddress("GenPart_pt",&GenPart_pt);
     // collect the trigger information
-    Bool_t HLT_IsoMu24, HLT_Ele32_WPTight_Gsf;
-    tin->SetBranchStatus("HLT_IsoMu24", 1);
+    Bool_t HLT_Ele32_WPTight_Gsf;
     tin->SetBranchStatus("HLT_Ele32_WPTight_Gsf", 1);
-    tin->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu24);
     tin->SetBranchAddress("HLT_Ele32_WPTight_Gsf", &HLT_Ele32_WPTight_Gsf);
 
     // collect the triggger Ids
-    Int_t Tau_charge[MAX_ARRAY_SIZE], Electron_charge[MAX_ARRAY_SIZE],Tau_nTrackerLayers[MAX_ARRAY_SIZE];
-    Bool_t Electron_mvaFall17V2Iso_WP90[MAX_ARRAY_SIZE], Tau_triggerIdLoose[MAX_ARRAY_SIZE], Tau_tightId[MAX_ARRAY_SIZE];
-    Float_t Tau_pfRelIso04_all[MAX_ARRAY_SIZE];
-    tin->SetBranchStatus("Tau_tightId", 1);
+    Int_t Tau_charge[MAX_ARRAY_SIZE], Electron_charge[MAX_ARRAY_SIZE];
+    Bool_t Electron_mvaFall17V2Iso_WP90[MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Tau_charge", 1);
-    tin->SetBranchStatus("Tau_triggerIdLoose", 1);
-    tin->SetBranchStatus("Tau_pfRelIso04_all", 1);
     tin->SetBranchStatus("Electron_charge", 1);
     tin->SetBranchStatus("Electron_mvaFall17V2Iso_WP90", 1);
-    tin->SetBranchStatus("Tau_nTrackerLayers", 1);
     tin->SetBranchAddress("Electron_mvaFall17V2Iso_WP90", &Electron_mvaFall17V2Iso_WP90);
-    tin->SetBranchAddress("Tau_tightId", &Tau_tightId);
     tin->SetBranchAddress("Tau_charge", &Tau_charge);
-    tin->SetBranchAddress("Tau_triggerIdLoose", &Tau_triggerIdLoose);
-    tin->SetBranchAddress("Tau_pfRelIso04_all", &Tau_pfRelIso04_all);
     tin->SetBranchAddress("Electron_charge", &Electron_charge);
-    tin->SetBranchAddress("Tau_nTrackerLayers", &Tau_nTrackerLayers);
 
     // Jet tagging and ID, FlavB is the recomended one, DeepB was used by Anup
     Float_t Jet_btagDeepFlavB[MAX_ARRAY_SIZE], Jet_btagDeepB[MAX_ARRAY_SIZE];
@@ -190,7 +176,7 @@ cout<<"Call completed!"<<endl;
 
     // open correctionfiles
     
-    string Tau_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/Tau_Z.json.gz";
+    string Tau_json = "???";
     string electron_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/electron.json.gz";
     string jets_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/jet_jmar.json";
     string b_tag_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/btagging.json.gz";
@@ -203,9 +189,9 @@ cout<<"Call completed!"<<endl;
     auto btag_c_set = CorrectionSet::from_file(b_tag_json);
     auto pu_c_set = CorrectionSet::from_file(pileup_json);
 
-    auto Tau_trigger = Tau_c_set->at("NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight");
-    auto Tau_id = Tau_c_set->at("NUM_TightID_DEN_genTracks");
-    auto Tau_iso = Tau_c_set->at("NUM_TightRelIso_DEN_TightIDandIPCut");
+    auto Tau_trigger = Tau_c_set->at("???");
+    auto Tau_id = Tau_c_set->at("???");
+    auto Tau_iso = Tau_c_set->at("???");
     auto electron_id = ele_c_set->at("UL-Electron-ID-SF");
     auto jet_pu = jet_c_set->at("PUJetID_eff");
     auto b_tag = btag_c_set->at("deepJet_mujets");
@@ -235,12 +221,12 @@ cout<<"Call completed!"<<endl;
     tout->Branch("invMass", &invMass);
     tout->Branch("electron_eta", &electron_eta);
     tout->Branch("electron_pt", &electron_pt);
-    tout->Branch("Tau_eta", &Tau_eta);
-    tout->Branch("Tau_pt", &Tau_pt);
+    tout->Branch("tau_eta", &tau_eta);
+    tout->Branch("tau_pt", &tau_pt);
     tout->Branch("Weight", &Weight);
 
     int Nloose = 0, Nmedium = 0, Ntight = 0, JetsNotB=0, Nprongs=0;
-    float dR_muE, dR_mujet, dR_ejet, dR_allJets, dR_lbJets, dR_mbJets, Apl_allJets, Apl_lbJets, Apl_mbJets, Phi_allJets, Phi_lbJets, Phi_mbJets, PTbjet,Acopl_emu;
+    float dR_muE, dR_mujet, dR_ejet, dR_allJets, dR_lbJets, dR_mbJets, Apl_allJets, Apl_lbJets, Apl_mbJets, Phi_allJets, Phi_lbJets, Phi_mbJets, PTbjet,Acopl_etau;
 
     tout->Branch("dR_mue", &dR_muE);
     tout->Branch("dR_mujet", &dR_mujet);
@@ -259,8 +245,9 @@ cout<<"Call completed!"<<endl;
     tout->Branch("Nmedium", &Nmedium);
     tout->Branch("Ntight", &Ntight);
     tout->Branch("JetNotB", &JetsNotB);
-    tout->Branch("Acopl_emu", &Acopl_emu);
+    tout->Branch("Acopl_etau", &Acopl_etau);
     tout->Branch("Nprongs", &Nprongs);
+
 
     trun_out->Branch("genEventSumw", &genEventSumw);
     trun_out->Branch("IntLumi", &IntLuminosity);
@@ -270,24 +257,24 @@ cout<<"Call completed!"<<endl;
     trun_out->Fill(); // we already called trun->GetEntry(0);
 
     #pragma omp parallel for
-    for (UInt_t i = 0; i <100;i++)//<nEv; i++)
-    {
+    for (UInt_t i = 0; i <<nEv; i++){
         tin->GetEntry(i);
         if (i % 100000 == 0)
             std::cout << "Processing entry " << i << " of " << nEv << endl;
         // apply triggers
 
-        if (!( HLT_Ele32_WPTight_Gsf))
-        {
+        if (!( HLT_Ele32_WPTight_Gsf)){
             trigger_dropped++;
             continue;
-        };
+        }
 
         Int_t Tau_idx = -1;
         for (UInt_t j = 0; j < nTau; j++)
         {
-            if ((Tau_pt[j] > 27. && abs(Tau_eta[j]) < 2.4 && Tau_tightId[j] && Tau_pfRelIso04_all[j] < 0.15))
-            {
+            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=16)){ //VLoose e- Tight mu Medium jet
+		if (Tau_decayMode[j]<=2) {OneProng=true;}
+		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
+		if (!(OneProng || ThreeProng)) {continue;}
                 Tau_idx = j;
                 Tau_p4->SetPtEtaPhiM(Tau_pt[j], Tau_eta[j], Tau_phi[j], Tau_mass[j]);
                 break;
@@ -299,38 +286,25 @@ cout<<"Call completed!"<<endl;
         }
         Weight = getWeight(IntLuminosity, crossSection, genWeight, genEventSumw);
         Weight *= pu_correction->evaluate({N_pu_vertices, "nominal"});
-			cout<<"PU corrections "<< pu_correction->evaluate({N_pu_vertices, "nominal"}) <<endl;
+			
 
-	int NMCparticle=Tau_genPartIdx[Tau_idx];
-	double scmMC;
-        Tau_pt[Tau_idx]*= scmMC;
-		cout<<"Rochester corrections "<<  scmMC <<endl;
-        Tau_p4->SetPtEtaPhiM(Tau_pt[Tau_idx], Tau_eta[Tau_idx], Tau_phi[Tau_idx], Tau_mass[Tau_idx]);
+	//TODO:insert here Tau corrections
 
-        if(HLT_IsoMu24) {Weight *= Tau_trigger->evaluate({"2018_UL", abs(Tau_eta[Tau_idx]), Tau_pt[Tau_idx], "sf"});} 
-        Weight *= Tau_id->evaluate({"2018_UL", abs(Tau_eta[Tau_idx]), Tau_pt[Tau_idx], "sf"}); 
-        Weight *= Tau_iso->evaluate({"2018_UL", abs(Tau_eta[Tau_idx]), Tau_pt[Tau_idx], "sf"});
+    
 
-		cout<<" Taus id: "<< Tau_id->evaluate({"2018_UL", abs(Tau_eta[Tau_idx]), Tau_pt[Tau_idx], "sf"})<<" Iso " <<Tau_iso->evaluate({"2018_UL", abs(Tau_eta[Tau_idx]), Tau_pt[Tau_idx], "sf"}) << " Trig "<<Tau_trigger->evaluate({"2018_UL", abs(Tau_eta[Tau_idx]), Tau_pt[Tau_idx], "sf"}) <<endl; 
-        
         Int_t electron_idx = -1;
         for (UInt_t j = 0; j < nElectron; j++)
         {
             if ((Electron_pt[j] > 35 && abs(Electron_eta[j]) < 2.4 && Electron_mvaFall17V2Iso_WP90[j]))
             {
 		if((abs(Electron_eta[j])>1.44) && (abs(Electron_eta[j])<1.57)) {continue;}
+
                 Electron_p4->SetPtEtaPhiM(Electron_pt[j], Electron_eta[j], Electron_phi[j], Electron_mass[j]);
-                if (Electron_p4->DeltaR(*Tau_p4) < 0.4)
-                {
-                    continue;
-                }
-                else
-                {
-                    electron_idx = j;
-                    break;
-                }
+
+                if 	(Electron_p4->DeltaR(*Tau_p4) < 0.4)  {continue;}
+                else	{electron_idx = j;   break;}
             }
-        }
+        }//end ele for
         if (electron_idx==-1) {
             n_dropped++;
             continue;
@@ -338,12 +312,11 @@ cout<<"Call completed!"<<endl;
 
         Weight *= electron_id->evaluate({"2018", "sf", "wp90iso", abs(Electron_eta[electron_idx]), Electron_pt[electron_idx]}); 
         Weight *= electron_id->evaluate({"2018", "sf", "RecoAbove20", abs(Electron_eta[electron_idx]), Electron_pt[electron_idx]});
-		cout<< "Ele Reco "<< electron_id->evaluate({"2018", "sf", "RecoAbove20", abs(Electron_eta[electron_idx]), Electron_pt[electron_idx]}) <<" Ele iso "<<electron_id->evaluate({"2018", "sf", "wp90iso", abs(Electron_eta[electron_idx]), Electron_pt[electron_idx]}) <<endl;
+		
         if(HLT_Ele32_WPTight_Gsf) {
             //retrieve Histo
             int bin = EleTrigHisto->FindBin(Electron_eta[electron_idx],Electron_pt[electron_idx]);
             float temp= EleTrigHisto->GetBinContent(bin);
-		cout<<"ELe trigger "<<temp<<endl;
             Weight*=temp;
             }
 
@@ -412,7 +385,7 @@ cout<<"Call completed!"<<endl;
           }//end kinematic if
         }//end for
           //corrections of jets already applied 
-	cout<<"pu tag weighting "<<t_weight<<endl;
+
         Weight*=t_weight; 
             
 	for(int jj=0;jj<flavor.size();jj++){
@@ -420,9 +393,11 @@ cout<<"Call completed!"<<endl;
 		if (flavor[jj]<4) convflav==0;
 		if (!(convflav==0 || convflav==4 || convflav==5)) {cout<<"Something weird in the flavor of jet"<<endl;}
 		if(tagged[jj]){
-			if (convflav!=0) {Weight *= b_tag->evaluate({"central", "M", convflav, abs(Jet_eta[njet_in_collection[jj]]), Jet_pt[njet_in_collection[jj]]}); cout<<"Btag succesful "<<b_tag->evaluate({"central", "M", convflav, abs(Jet_eta[njet_in_collection[jj]]), Jet_pt[njet_in_collection[jj]]})<<endl;}
-			else  {Weight *= b_mistag->evaluate({"central", "M", convflav, abs(Jet_eta[njet_in_collection[jj]]), Jet_pt[njet_in_collection[jj]]}); cout<<"Btag succesful "<<b_mistag->evaluate({"central", "M", convflav, abs(Jet_eta[njet_in_collection[jj]]), Jet_pt[njet_in_collection[jj]]})<<endl;}
-			continue;}
+			if (convflav!=0) 
+				Weight *= b_tag->evaluate({"central", "M", convflav, abs(Jet_eta[njet_in_collection[jj]]), Jet_pt[njet_in_collection[jj]]});
+			else  Weight *= b_mistag->evaluate({"central", "M", convflav, abs(Jet_eta[njet_in_collection[jj]]), Jet_pt[njet_in_collection[jj]]});
+			continue;
+			}
 
 		//if not tagged
 		if(!tagged[jj]) {
@@ -444,7 +419,7 @@ cout<<"Call completed!"<<endl;
 				int bin =b_eff->FindBin(Jet_pt[njet_in_collection[jj]],abs(Jet_eta[njet_in_collection[jj]]));
 				Eff=b_eff->GetBinContent(bin);
 				}
-			cout<<"Btag failed "<<(1-SF*Eff)/(1-Eff)<<endl;
+			
 			Weight*=(1-SF*Eff)/(1-Eff);
 			}
 		
@@ -486,8 +461,8 @@ cout<<"Call completed!"<<endl;
         }
 
         // fill the histograms
-        Tau_pt = Tau_pt[Tau_idx];
-        Tau_eta = Tau_eta[Tau_idx];
+        tau_pt = Tau_pt[Tau_idx];
+        tau_eta = Tau_eta[Tau_idx];
         electron_pt = Electron_pt[electron_idx];
         electron_eta = Electron_eta[electron_idx];
 
@@ -497,8 +472,8 @@ cout<<"Call completed!"<<endl;
         h_Electron_pt->Fill(electron_pt);
         h_Electron_eta->Fill(electron_eta);
         // fill the weighted histograms
-        h_Tau_pt_weighted->Fill(Tau_pt, Weight);
-        h_Tau_eta_weighted->Fill(Tau_eta, Weight);
+        h_Tau_pt_weighted->Fill(tau_pt, Weight);
+        h_Tau_eta_weighted->Fill(tau_eta, Weight);
         h_Electron_pt_weighted->Fill(electron_pt, Weight);
         h_Electron_eta_weighted->Fill(electron_eta, Weight);
 
@@ -544,7 +519,6 @@ cout<<"Call completed!"<<endl;
 
         dR_allJets = 999, dR_lbJets = 999, dR_mbJets = 999;
         Apl_allJets = 1.1, Apl_lbJets = 1.1, Apl_mbJets = 1.1;
-        bool ok1 = false, ok2 = false, ok3 = false;
         for (size_t j = 0; j < nJet; j++)
         {  
           if (j == id_m_jet)
@@ -559,38 +533,16 @@ cout<<"Call completed!"<<endl;
 
             double tempApl = A.Dot(B) / (A.Mag() * B.Mag());
 
-            if (temp < dR_allJets)
-            {
-                dR_allJets = temp;
-                ok1 = true;
+            if (temp < dR_allJets){ dR_allJets = temp;}
+            if (tempApl < Apl_allJets){Apl_allJets = tempApl;}
+
+            if (Jet_btagDeepFlavB[j] > 0.0490){
+                if (temp < dR_lbJets) {dR_lbJets = temp;}
+                if (tempApl < Apl_lbJets) {Apl_lbJets = tempApl;}
             }
-            if (tempApl < Apl_allJets)
-            {
-                Apl_allJets = tempApl;
-            }
-            if (Jet_btagDeepFlavB[j] > 0.0490)
-            {
-                ok2 = true;
-                if (temp < dR_lbJets)
-                {
-                    dR_lbJets = temp;
-                }
-                if (tempApl < Apl_lbJets)
-                {
-                    Apl_lbJets = tempApl;
-                }
-            }
-            if (Jet_btagDeepFlavB[j] > 0.2783)
-            {
-                ok3 = true;
-                if (temp < dR_mbJets)
-                {
-                    dR_mbJets = temp;
-                }
-                if (tempApl < Apl_mbJets)
-                {
-                    Apl_mbJets = tempApl;
-                }
+            if (Jet_btagDeepFlavB[j] > 0.2783){
+		if (temp < dR_mbJets) {dR_mbJets = temp; }
+                if (tempApl < Apl_mbJets) {Apl_mbJets = tempApl;}
             }
 
             delete tempJet;
@@ -599,43 +551,29 @@ cout<<"Call completed!"<<endl;
 
         // dphi
         Phi_allJets = 999, Phi_lbJets = 999, Phi_mbJets = 999;
-        for (size_t j = 0; j < nJet; j++)
-        { 
-            if (j == id_m_jet)
-                continue;
+        for (size_t j = 0; j < nJet; j++){ 
+          if (j == id_m_jet) continue;
           if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4))){
             double temp = Jet_phi[j] - OppositeBjet_p4->Phi();
-            if (temp < -1 * M_PI)
-                temp += 2 * M_PI;
-            if (temp > M_PI)
-                temp -= 2 * M_PI;
-            if (temp < 0)
-                temp *= (-1);
+            if (temp < -1 * M_PI) temp += 2 * M_PI;
+            if (temp > M_PI) temp -= 2 * M_PI;
+            if (temp < 0) temp *= (-1);
 
-            if (temp < Phi_allJets)
-            {
-                Phi_allJets = temp;
-            }
-            if ((Jet_btagDeepFlavB[j] > 0.0490) && (temp < Phi_lbJets))
-            {
-                Phi_lbJets = temp;
-            }
-            if ((Jet_btagDeepFlavB[j] > 0.2783) && (temp < Phi_mbJets))
-            {
-                Phi_mbJets = temp;
-            }
-         }
-        }
+            if (temp < Phi_allJets)   {Phi_allJets = temp; }
+            if ((Jet_btagDeepFlavB[j] > 0.0490) && (temp < Phi_lbJets))   {Phi_lbJets = temp; }
+            if ((Jet_btagDeepFlavB[j] > 0.2783) && (temp < Phi_mbJets))   {Phi_mbJets = temp;}
+          }//end if
+        }//endfor
 
         if (Tau_idx > -1 && electron_idx > -1)
         {
-            // calculate the invariant mass of the two Taus
+            
             invMass = (*(Tau_p4) + *(Electron_p4)).M();
-            // fill the invariant mass histogram
+            
             h_Tau_Electron_invariant_mass->Fill(invMass);
             h_Tau_Electron_invariant_mass_weighted->Fill(invMass, Weight);
         }
-        // fill the tree
+       
         tout->Fill();
     }
 
