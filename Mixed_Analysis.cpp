@@ -88,11 +88,13 @@ cout<<"Call completed!"<<endl;
     tin->SetBranchStatus("Jet_phi", 1);
     tin->SetBranchAddress("Jet_phi", &Jet_phi);
     // get the mass
-    Float_t Tau_mass[MAX_ARRAY_SIZE], Electron_mass[MAX_ARRAY_SIZE], Jet_mass[MAX_ARRAY_SIZE];
+    Float_t Tau_mass[MAX_ARRAY_SIZE], Electron_mass[MAX_ARRAY_SIZE], Jet_mass[MAX_ARRAY_SIZE], Tau_energy[MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Electron_mass", 1);
     tin->SetBranchAddress("Electron_mass", &Electron_mass);
     tin->SetBranchStatus("Tau_mass", 1);
     tin->SetBranchAddress("Tau_mass", &Tau_mass);
+    tin->SetBranchStatus("Tau_energy", 1);
+    tin->SetBranchAddress("Tau_eEnergy", &Tau_energy);
     tin->SetBranchStatus("Jet_mass", 1);
     tin->SetBranchAddress("Jet_mass", &Jet_mass);
 
@@ -176,7 +178,7 @@ cout<<"Call completed!"<<endl;
 
     // open correctionfiles
     
-    string Tau_json = "???";
+    string Tau_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/tau.json.gz";
     string electron_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/electron.json.gz";
     string jets_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/jet_jmar.json";
     string b_tag_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/btagging.json.gz";
@@ -189,9 +191,11 @@ cout<<"Call completed!"<<endl;
     auto btag_c_set = CorrectionSet::from_file(b_tag_json);
     auto pu_c_set = CorrectionSet::from_file(pileup_json);
 
-    auto Tau_trigger = Tau_c_set->at("???");
-    auto Tau_id = Tau_c_set->at("???");
-    auto Tau_iso = Tau_c_set->at("???");
+    auto Tau_Escale = Tau_c_set->at("tau_energy_scale");
+    auto Tau_idvse = Tau_c_set->at("DeepTau2017v2p1VSe");
+    auto Tau_idvsmu = Tau_c_set->at("DeepTau2017v2p1VSmu");
+    auto Tau_idvsjet = Tau_c_set->at("DeepTau2017v2p1VSjet");
+    //auto Tau_trig = Tau_c_set->at("");
     auto electron_id = ele_c_set->at("UL-Electron-ID-SF");
     auto jet_pu = jet_c_set->at("PUJetID_eff");
     auto b_tag = btag_c_set->at("deepJet_mujets");
@@ -248,7 +252,6 @@ cout<<"Call completed!"<<endl;
     tout->Branch("Acopl_etau", &Acopl_etau);
     tout->Branch("Nprongs", &Nprongs);
 
-
     trun_out->Branch("genEventSumw", &genEventSumw);
     trun_out->Branch("IntLumi", &IntLuminosity);
     trun_out->Branch("xs", &crossSection);
@@ -276,7 +279,8 @@ cout<<"Call completed!"<<endl;
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
 		if (!(OneProng || ThreeProng)) {continue;}
                 Tau_idx = j;
-                Tau_p4->SetPtEtaPhiM(Tau_pt[j], Tau_eta[j], Tau_phi[j], Tau_mass[j]);
+		double ScaleE=Energy->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta
+                Tau_p4->SetPtEtaPhiE(Tau_pt[j], Tau_eta[j], Tau_phi[j], Tau_energy[j]*ScaleE);
                 break;
             }
         }
@@ -289,7 +293,9 @@ cout<<"Call completed!"<<endl;
 			
 
 	//TODO:insert here Tau corrections
-
+	Weight *=Tau_idvse->evaluate({abs(Tau_eta[j]),Tau_genPartFlav[j],"VLoose","nom"});
+	Weight *=Tau_idvsmu->evaluate({abs(Tau_eta[j]),Tau_genPartFlav[j],"Tight","nom"});
+	Weight *=Tau_idvse->evaluate({Tau_p4->Pt(),Tau_decayMode[j],Tau_genPartFlav[j],"Medium","nom","pt"});
     
 
         Int_t electron_idx = -1;
@@ -461,8 +467,8 @@ cout<<"Call completed!"<<endl;
         }
 
         // fill the histograms
-        tau_pt = Tau_pt[Tau_idx];
-        tau_eta = Tau_eta[Tau_idx];
+        tau_pt = Tau_p4->Pt();
+        tau_eta = Tau_p4->Pt();
         electron_pt = Electron_pt[electron_idx];
         electron_eta = Electron_eta[electron_idx];
 
@@ -489,7 +495,8 @@ cout<<"Call completed!"<<endl;
                 // printMCTree(nGenPart, GenPart_pdgId,GenPart_genPartIdxMother, Tau_genPartIdx[j]);
                 if (isFromW(nGenPart, GenPart_pdgId, GenPart_genPartIdxMother, Tau_genPartIdx[j]))
                 {
-                    Tau_pt_from_W = Tau_pt[j];
+			double ScaleE=Energy->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta
+                    Tau_pt_from_W = Tau_pt[j]*ScaleE;
                     Tau_eta_from_W = Tau_eta[j];
                     h_Tau_pt_from_W->Fill(Tau_pt_from_W);
                     h_Tau_eta_from_W->Fill(Tau_eta_from_W);
