@@ -1,6 +1,7 @@
 #ifndef Auxiliary_cpp
 #define Auxiliary_cpp
 #include <iostream>
+#include"Histodef.cpp"
 // inputs are: size of arrays GenID and GenPar
 // the pointer at the start of the array of GenParticles_PDGID
 // the pointer at the start of the array of GenParticles_Parent

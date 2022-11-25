@@ -10,9 +10,9 @@
 #include "TRandom3.h"
 
 // include user defined histograms and auxiliary macros
-#include "Auxiliary.cpp"
 #include "Histodef.cpp"
-#include "Python_Analysis/corrections/roccor/RoccoR.cc"
+#include "Auxiliary.cpp"
+
 
 // correctionlib
 #include "correction.h"
@@ -88,13 +88,13 @@ cout<<"Call completed!"<<endl;
     tin->SetBranchStatus("Jet_phi", 1);
     tin->SetBranchAddress("Jet_phi", &Jet_phi);
     // get the mass
-    Float_t Tau_mass[MAX_ARRAY_SIZE], Electron_mass[MAX_ARRAY_SIZE], Jet_mass[MAX_ARRAY_SIZE], Tau_energy[MAX_ARRAY_SIZE];
+    Float_t Tau_mass[MAX_ARRAY_SIZE], Electron_mass[MAX_ARRAY_SIZE], Jet_mass[MAX_ARRAY_SIZE];//, Tau_energy[MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Electron_mass", 1);
     tin->SetBranchAddress("Electron_mass", &Electron_mass);
     tin->SetBranchStatus("Tau_mass", 1);
     tin->SetBranchAddress("Tau_mass", &Tau_mass);
-    tin->SetBranchStatus("Tau_energy", 1);
-    tin->SetBranchAddress("Tau_eEnergy", &Tau_energy);
+    /*tin->SetBranchStatus("Tau_energy", 1);
+    tin->SetBranchAddress("Tau_energy", &Tau_energy);*/
     tin->SetBranchStatus("Jet_mass", 1);
     tin->SetBranchAddress("Jet_mass", &Jet_mass);
 
@@ -151,6 +151,18 @@ cout<<"Call completed!"<<endl;
     tin->SetBranchAddress("Jet_puId", &Jet_puId);
     tin->SetBranchAddress("Jet_hadronFlavour", &Jet_hadronFlavour);
 
+    UChar_t Tau_idDeepTau2017v2p1VSmu[MAX_ARRAY_SIZE],Tau_idDeepTau2017v2p1VSjet[MAX_ARRAY_SIZE], Tau_idDeepTau2017v2p1VSe[MAX_ARRAY_SIZE];
+    Int_t Tau_decayMode[MAX_ARRAY_SIZE];
+
+    tin->SetBranchStatus("Tau_idDeepTau2017v2p1VSmu", 1);
+    tin->SetBranchStatus("Tau_idDeepTau2017v2p1VSjet", 1);
+    tin->SetBranchStatus("Tau_idDeepTau2017v2p1VSe", 1);
+    tin->SetBranchStatus("Tau_decayMode", 1);
+    tin->SetBranchAddress("Tau_decayMode", &Tau_decayMode);
+    tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSmu", &Tau_idDeepTau2017v2p1VSmu);
+    tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSjet", &Tau_idDeepTau2017v2p1VSjet);   
+    tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSe", &Tau_idDeepTau2017v2p1VSe);
+
     // pu stuff
     Float_t N_pu_vertices;
     tin->SetBranchStatus("Pileup_nTrueInt", 1);
@@ -170,12 +182,7 @@ cout<<"Call completed!"<<endl;
     TLorentzVector *Electron_p4 = new TLorentzVector();
     TLorentzVector *MainBjet_p4 = new TLorentzVector();
     TLorentzVector *OppositeBjet_p4 = new TLorentzVector();
-
-    // allow pt, inv mass, and eta to be stored in a Branch
-    Float_t leading_lepton_pt, invMass, electron_eta, electron_pt, Tau_eta, Tau_pt;
-    Float_t Tau_eta_from_W, Tau_pt_from_W, electron_eta_from_W, electron_pt_from_W;
-    float Weight;
-
+cout<<"Corr"<<endl;
     // open correctionfiles
     
     string Tau_json = "/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Python_Analysis/corrections/tau.json.gz";
@@ -210,11 +217,12 @@ cout<<"Call completed!"<<endl;
     TH2D * c_eff= static_cast<TH2D *>(fb_eff->Get("c_jets_tagged")); 
     TH2D * b_eff= static_cast<TH2D *>(fb_eff->Get("b_jets_tagged")); 
    
-    TRandom3 * RndGen=new TRandom3();
-  
-    
     // save the histograms in a new File
-
+    // allow pt, inv mass, and eta to be stored in a Branch
+    Float_t leading_lepton_pt, invMass, electron_eta, electron_pt, tau_eta, tau_pt;
+    Float_t Tau_eta_from_W, Tau_pt_from_W, electron_eta_from_W, electron_pt_from_W;
+    float Weight;
+	cout<<"fout"<<endl;
     TFile *fout = new TFile(ofile.c_str(), "RECREATE");
     
     // create a new tree for the output
@@ -258,19 +266,20 @@ cout<<"Call completed!"<<endl;
     trun_out->Branch("nEv", &n_events);
 
     trun_out->Fill(); // we already called trun->GetEntry(0);
-
-    #pragma omp parallel for
-    for (UInt_t i = 0; i <<nEv; i++){
-        tin->GetEntry(i);
+    cout<<"Staring cycle"<<endl;
+    //#pragma omp parallel for
+    for (UInt_t i = 0; i <nEv; i++){
+        tin->GetEntry(i); //cout<<"kill me"<<endl;
         if (i % 100000 == 0)
-            std::cout << "Processing entry " << i << " of " << nEv << endl;
+            cout << "Processing entry " << i << " of " << nEv << endl;
         // apply triggers
-
+//cout<<"Skidding"<<endl;
         if (!( HLT_Ele32_WPTight_Gsf)){
             trigger_dropped++;
             continue;
         }
 
+	bool OneProng=false, ThreeProng=false;
         Int_t Tau_idx = -1;
         for (UInt_t j = 0; j < nTau; j++)
         {
@@ -279,8 +288,8 @@ cout<<"Call completed!"<<endl;
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
 		if (!(OneProng || ThreeProng)) {continue;}
                 Tau_idx = j;
-		double ScaleE=Energy->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta
-                Tau_p4->SetPtEtaPhiE(Tau_pt[j], Tau_eta[j], Tau_phi[j], Tau_energy[j]*ScaleE);
+		double ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta
+                Tau_p4->SetPtEtaPhiM(Tau_pt[j]*ScaleE, Tau_eta[j], Tau_phi[j], Tau_mass[j]*ScaleE);
                 break;
             }
         }
@@ -293,9 +302,9 @@ cout<<"Call completed!"<<endl;
 			
 
 	//TODO:insert here Tau corrections
-	Weight *=Tau_idvse->evaluate({abs(Tau_eta[j]),Tau_genPartFlav[j],"VLoose","nom"});
-	Weight *=Tau_idvsmu->evaluate({abs(Tau_eta[j]),Tau_genPartFlav[j],"Tight","nom"});
-	Weight *=Tau_idvse->evaluate({Tau_p4->Pt(),Tau_decayMode[j],Tau_genPartFlav[j],"Medium","nom","pt"});
+	Weight *=Tau_idvse->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"VLoose","nom"});
+	Weight *=Tau_idvsmu->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"Tight","nom"});
+	Weight *=Tau_idvse->evaluate({Tau_p4->Pt(),Tau_decayMode[Tau_idx],Tau_genPartFlav[Tau_idx],"Medium","nom","pt"});
     
 
         Int_t electron_idx = -1;
@@ -431,61 +440,72 @@ cout<<"Call completed!"<<endl;
 		
 		}
         //filling before jet selections
-        h_LooseJets->Fill(Nloose, Weight);
-        h_MediumJets->Fill(Nmedium, Weight);
-        h_TightJets->Fill(Ntight, Weight);
-        Acopl_emu=M_PI-(Electron_p4->DeltaPhi(*Tau_p4));
-        h_acopla_emu->Fill(Acopl_emu,Weight);
+	Acopl_etau=M_PI-(Electron_p4->DeltaPhi(*Tau_p4));
+	if(OneProng){
+		h_LooseJets_p1->Fill(Nloose, Weight);
+		h_MediumJets_p1->Fill(Nmedium, Weight);
+		h_TightJets_p1->Fill(Ntight, Weight);
+		h_acopla_etau_p1->Fill(Acopl_etau,Weight);
+		}
+	if(ThreeProng){
+		h_LooseJets_p3->Fill(Nloose, Weight);
+		h_MediumJets_p3->Fill(Nmedium, Weight);
+		h_TightJets_p3->Fill(Ntight, Weight);
+		h_acopla_etau_p3->Fill(Acopl_etau,Weight);
+		}
 
 
         selection = selection && (one_Bjet);
-        if (!selection)
-        {
+        if (!selection){
             n_dropped++;
             continue;
         }
+	if(OneProng) {Nprongs=1;}
+	if(ThreeProng) {Nprongs=3;}
         PTbjet = MainBjet_p4->Pt();
 
         dR_mujet = Tau_p4->DeltaR(*MainBjet_p4);
         dR_ejet = Electron_p4->DeltaR(*MainBjet_p4);
         dR_muE = Tau_p4->DeltaR(*Electron_p4);
 
-
-        // check whether Tau or electron is the leading one
-        if (Tau_p4->Pt() > Electron_p4->Pt())
-        {
-            // fill the hist
-            leading_lepton_pt = Tau_p4->Pt();
-            h_leading_lepton_pt->Fill(leading_lepton_pt);
-            h_leading_lepton_pt_weighted->Fill(leading_lepton_pt, Weight);
-        }
-        else
-        {
-            leading_lepton_pt = Electron_p4->Pt();
-            h_leading_lepton_pt->Fill(leading_lepton_pt);
-            h_leading_lepton_pt_weighted->Fill(leading_lepton_pt, Weight);
-        }
-
-        // fill the histograms
+	// fill the tree
         tau_pt = Tau_p4->Pt();
-        tau_eta = Tau_p4->Pt();
+        tau_eta = Tau_p4->Eta();
         electron_pt = Electron_pt[electron_idx];
         electron_eta = Electron_eta[electron_idx];
+        // check whether Tau or electron is the leading one
+        if (Tau_p4->Pt() > Electron_p4->Pt()) {leading_lepton_pt = Tau_p4->Pt();}
+        else	{leading_lepton_pt = Electron_p4->Pt();}
 
-        h_Tau_pt->Fill(Tau_pt);
-        h_Tau_eta->Fill(Tau_eta);
+        if(OneProng) {
+		h_leading_lepton_pt_p1->Fill(leading_lepton_pt);
+		h_leading_lepton_pt_weighted_p1->Fill(leading_lepton_pt, Weight);
+		h_Tau_pt_p1->Fill(tau_pt);
+		h_Tau_eta_p1->Fill(tau_eta);
+		h_Electron_pt_p1->Fill(electron_pt);
+		h_Electron_eta_p1->Fill(electron_eta);
+		h_Tau_pt_weighted_p1->Fill(tau_pt, Weight);
+		h_Tau_eta_weighted_p1->Fill(tau_eta, Weight);
+		h_Electron_pt_weighted_p1->Fill(electron_pt, Weight);
+		h_Electron_eta_weighted_p1->Fill(electron_eta, Weight);
+		h_NJets_p1->Fill(njets,Weight);
+		}
 
-        h_Electron_pt->Fill(electron_pt);
-        h_Electron_eta->Fill(electron_eta);
-        // fill the weighted histograms
-        h_Tau_pt_weighted->Fill(tau_pt, Weight);
-        h_Tau_eta_weighted->Fill(tau_eta, Weight);
-        h_Electron_pt_weighted->Fill(electron_pt, Weight);
-        h_Electron_eta_weighted->Fill(electron_eta, Weight);
-
-	h_NJets->Fill(njets,Weight);
+	 if(ThreeProng) {
+		h_leading_lepton_pt_p3->Fill(leading_lepton_pt);
+		h_leading_lepton_pt_weighted_p3->Fill(leading_lepton_pt, Weight);
+		h_Tau_pt_p3->Fill(tau_pt);
+		h_Tau_eta_p3->Fill(tau_eta);
+		h_Electron_pt_p3->Fill(electron_pt);
+		h_Electron_eta_p3->Fill(electron_eta);
+		h_Tau_pt_weighted_p3->Fill(tau_pt, Weight);
+		h_Tau_eta_weighted_p3->Fill(tau_eta, Weight);
+		h_Electron_pt_weighted_p3->Fill(electron_pt, Weight);
+		h_Electron_eta_weighted_p3->Fill(electron_eta, Weight);
+		h_NJets_p1->Fill(njets,Weight);
+		}
         // only for signal
-        if (Signal)
+        /*if (Signal)
         {
             // cross check which index the objects have that actually originate from the W
             size_t nTau_p4 = 0, nElectron_p4 = 0;
@@ -495,7 +515,7 @@ cout<<"Call completed!"<<endl;
                 // printMCTree(nGenPart, GenPart_pdgId,GenPart_genPartIdxMother, Tau_genPartIdx[j]);
                 if (isFromW(nGenPart, GenPart_pdgId, GenPart_genPartIdxMother, Tau_genPartIdx[j]))
                 {
-			double ScaleE=Energy->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta
+			double ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta
                     Tau_pt_from_W = Tau_pt[j]*ScaleE;
                     Tau_eta_from_W = Tau_eta[j];
                     h_Tau_pt_from_W->Fill(Tau_pt_from_W);
@@ -521,7 +541,7 @@ cout<<"Call completed!"<<endl;
                         non_matching_electron++;
                 }
             }
-        }
+        }*/
         // END only for signal
 
         dR_allJets = 999, dR_lbJets = 999, dR_mbJets = 999;
@@ -572,15 +592,17 @@ cout<<"Call completed!"<<endl;
           }//end if
         }//endfor
 
-        if (Tau_idx > -1 && electron_idx > -1)
-        {
-            
+        if (Tau_idx > -1 && electron_idx > -1){
             invMass = (*(Tau_p4) + *(Electron_p4)).M();
-            
-            h_Tau_Electron_invariant_mass->Fill(invMass);
-            h_Tau_Electron_invariant_mass_weighted->Fill(invMass, Weight);
-        }
-       
+	    if(OneProng){
+		    h_Tau_Electron_invariant_mass_p1->Fill(invMass);
+		    h_Tau_Electron_invariant_mass_weighted_p1->Fill(invMass);
+		    }
+	    if(ThreeProng){
+		    h_Tau_Electron_invariant_mass_p3->Fill(invMass);
+		    h_Tau_Electron_invariant_mass_weighted_p3->Fill(invMass);
+		    }
+        }       
         tout->Fill();
     }
 

@@ -243,8 +243,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 		h_acopla_etau_p3->Fill(Acopl_etau);
 		}
 
-        if (!selection)
-        {
+        if (!selection){
             n_dropped++;
             continue;
         }
