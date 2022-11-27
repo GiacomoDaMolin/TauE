@@ -20,8 +20,8 @@ while getopts "i:o:x:l:s:" opt; do
         ;;
     esac
 done
-EXE="/afs/cern.ch/user/g/gdamolin/Johan/TTbar/Mixed_Analysis"
-outdir="/afs/cern.ch/user/g/gdamolin/Johan/MC"
+EXE="/afs/cern.ch/user/g/gdamolin/Johan/TauE/MC_TauE.exe"
+outdir="/afs/cern.ch/user/g/gdamolin/Johan/te/MC"
 filename=$INFILE
 filestring=$(echo $filename | sed 's|\(^.*/\)\([a-z,A-Z,0-9,-]*\).root$|\2|')
 ofilename=${outdir}/$filestring"_MA".root

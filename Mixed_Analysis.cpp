@@ -288,7 +288,7 @@ cout<<"Corr"<<endl;
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
 		if (!(OneProng || ThreeProng)) {continue;}
                 Tau_idx = j;
-		double ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta
+		double ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta;
                 Tau_p4->SetPtEtaPhiM(Tau_pt[j]*ScaleE, Tau_eta[j], Tau_phi[j], Tau_mass[j]*ScaleE);
                 break;
             }
@@ -301,11 +301,10 @@ cout<<"Corr"<<endl;
         Weight *= pu_correction->evaluate({N_pu_vertices, "nominal"});
 			
 
-	//TODO:insert here Tau corrections
 	Weight *=Tau_idvse->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"VLoose","nom"});
 	Weight *=Tau_idvsmu->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"Tight","nom"});
-	Weight *=Tau_idvse->evaluate({Tau_p4->Pt(),Tau_decayMode[Tau_idx],Tau_genPartFlav[Tau_idx],"Medium","nom","pt"});
-    
+	Weight *=Tau_idvsjet->evaluate({Tau_p4->Pt(),Tau_decayMode[Tau_idx],Tau_genPartFlav[Tau_idx],"Medium","nom","pt"});
+   
 
         Int_t electron_idx = -1;
         for (UInt_t j = 0; j < nElectron; j++)
