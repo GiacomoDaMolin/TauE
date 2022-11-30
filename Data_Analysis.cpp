@@ -269,6 +269,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 
 	if(OneProng){
 		h_leading_lepton_pt_p1->Fill(leading_lepton_pt);
+		h_leading_lepton_pt_weighted_p1->Fill(leading_lepton_pt);
 		h_Tau_pt_p1->Fill(tau_pt);
 		h_Tau_eta_p1->Fill(tau_eta);
 		h_Electron_pt_p1->Fill(electron_pt);
@@ -281,6 +282,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 		}
 	if(ThreeProng){
 		h_leading_lepton_pt_p3->Fill(leading_lepton_pt);
+		h_leading_lepton_pt_weighted_p3->Fill(leading_lepton_pt);
 		h_Tau_pt_p3->Fill(tau_pt);
 		h_Tau_eta_p3->Fill(tau_eta);
 		h_Electron_pt_p3->Fill(electron_pt);
