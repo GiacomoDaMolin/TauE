@@ -209,7 +209,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
         for (size_t j = 0; j < nJet; j++){
           if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4)))
             {
-	    njets++;
+	    if (MainBjet_p4->DeltaR(*Tau_p4) > 0.4 && MainBjet_p4->DeltaR(*Electron_p4) > 0.4) njets++;
 	    if (Jet_btagDeepFlavB[j] < 0.0490) JetsNotB++;
 	    if (Jet_btagDeepFlavB[j] > 0.0490)	Nloose++;
 	    if (Jet_btagDeepFlavB[j] > 0.2783)	Nmedium++;
@@ -228,6 +228,12 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
         }
         selection = selection && (one_Bjet);
 
+	
+
+        if (!selection){
+            n_dropped++;
+            continue;
+        }
 	Acopl_etau=M_PI-(Electron_p4->DeltaPhi(*Tau_p4));
 
 	if(OneProng){
@@ -235,18 +241,15 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 		h_MediumJets_p1->Fill(Nmedium);
 		h_TightJets_p1->Fill(Ntight);
 		h_acopla_etau_p1->Fill(Acopl_etau);
+		h_NJets_p1->Fill(njets,Weight);
 		}
         if(ThreeProng){
 		h_LooseJets_p3->Fill(Nloose);
 		h_MediumJets_p3->Fill(Nmedium);
 		h_TightJets_p3->Fill(Ntight);
 		h_acopla_etau_p3->Fill(Acopl_etau);
+		h_NJets_p3->Fill(njets,Weight);
 		}
-
-        if (!selection){
-            n_dropped++;
-            continue;
-        }
 	if(OneProng) {Nprongs=1;}
 	if(ThreeProng) {Nprongs=3;}
         PTbjet=MainBjet_p4->Pt();
@@ -336,6 +339,30 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 			if((Jet_btagDeepFlavB[j] > 0.2783) && (temp<Phi_mbJets)) {Phi_mbJets=temp;}
         		 }//end if
         	}//end for
+
+	if(OneProng){
+		h_dR_allJets_p1->Fill(dR_allJets);
+		h_dR_lbJets_p1->Fill(dR_lbJets);
+		h_dR_mbJets_p1->Fill(dR_mbJets);
+		h_Apl_allJets_p1->Fill(Apl_allJets);
+		h_Apl_lbJets_p1->Fill(Apl_lbJets);
+		h_Apl_mbJets_p1->Fill(Apl_mbJets);
+		h_Phi_allJets_p1->Fill(Phi_allJets);
+		h_Phi_lbJets_p1->Fill(Phi_allJets);
+		h_Phi_mbJets_p1->Fill(Phi_allJets);
+		}
+	if(ThreeProng){
+		h_dR_allJets_p3->Fill(dR_allJets);
+		h_dR_lbJets_p3->Fill(dR_lbJets);
+		h_dR_mbJets_p3->Fill(dR_mbJets);
+		h_Apl_allJets_p3->Fill(Apl_allJets);
+		h_Apl_lbJets_p3->Fill(Apl_lbJets);
+		h_Apl_mbJets_p3->Fill(Apl_mbJets);
+		h_Phi_allJets_p3->Fill(Phi_allJets);
+		h_Phi_lbJets_p3->Fill(Phi_allJets);
+		h_Phi_mbJets_p3->Fill(Phi_allJets);
+		}
+
 
 
         if (Tau_idx > -1 && electron_idx > -1)

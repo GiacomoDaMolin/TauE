@@ -298,6 +298,7 @@ cout<<"Corr"<<endl;
             continue;
         }
         Weight = getWeight(IntLuminosity, crossSection, genWeight, genEventSumw);
+	double Weight2=Weight;
         Weight *= pu_correction->evaluate({N_pu_vertices, "nominal"});
 			
 
@@ -374,7 +375,7 @@ cout<<"Corr"<<endl;
               njet_in_collection.push_back(j);
               flavor.push_back(abs(Jet_hadronFlavour[j]));
               tagged.push_back((Jet_btagDeepFlavB[j] > jet_btag_deepFlav_wp));
-	      njets++;
+	      if (MainBjet_p4->DeltaR(*Tau_p4) > 0.4 && MainBjet_p4->DeltaR(*Electron_p4) > 0.4) njets++;
         
 	      if (Jet_btagDeepFlavB[j] < 0.0490) JetsNotB++;
 	      if (Jet_btagDeepFlavB[j] > 0.0490)
@@ -439,26 +440,29 @@ cout<<"Corr"<<endl;
 		
 		}
         //filling before jet selections
-	Acopl_etau=M_PI-(Electron_p4->DeltaPhi(*Tau_p4));
-	if(OneProng){
-		h_LooseJets_p1->Fill(Nloose, Weight);
-		h_MediumJets_p1->Fill(Nmedium, Weight);
-		h_TightJets_p1->Fill(Ntight, Weight);
-		h_acopla_etau_p1->Fill(Acopl_etau,Weight);
-		}
-	if(ThreeProng){
-		h_LooseJets_p3->Fill(Nloose, Weight);
-		h_MediumJets_p3->Fill(Nmedium, Weight);
-		h_TightJets_p3->Fill(Ntight, Weight);
-		h_acopla_etau_p3->Fill(Acopl_etau,Weight);
-		}
-
+	
 
         selection = selection && (one_Bjet);
         if (!selection){
             n_dropped++;
             continue;
         }
+	Acopl_etau=M_PI-(Electron_p4->DeltaPhi(*Tau_p4));
+	if(OneProng){
+		h_LooseJets_p1->Fill(Nloose, Weight);
+		h_MediumJets_p1->Fill(Nmedium, Weight);
+		h_TightJets_p1->Fill(Ntight, Weight);
+		h_acopla_etau_p1->Fill(Acopl_etau,Weight);
+		h_NJets_p1->Fill(njets,Weight);
+		}
+	if(ThreeProng){
+		h_LooseJets_p3->Fill(Nloose, Weight);
+		h_MediumJets_p3->Fill(Nmedium, Weight);
+		h_TightJets_p3->Fill(Ntight, Weight);
+		h_acopla_etau_p3->Fill(Acopl_etau,Weight);
+		h_NJets_p3->Fill(njets,Weight);
+		}
+
 	if(OneProng) {Nprongs=1;}
 	if(ThreeProng) {Nprongs=3;}
         PTbjet = MainBjet_p4->Pt();
@@ -477,12 +481,12 @@ cout<<"Corr"<<endl;
         else	{leading_lepton_pt = Electron_p4->Pt();}
 
         if(OneProng) {
-		h_leading_lepton_pt_p1->Fill(leading_lepton_pt);
+		h_leading_lepton_pt_p1->Fill(leading_lepton_pt,Weight2);
 		h_leading_lepton_pt_weighted_p1->Fill(leading_lepton_pt, Weight);
-		h_Tau_pt_p1->Fill(tau_pt);
-		h_Tau_eta_p1->Fill(tau_eta);
-		h_Electron_pt_p1->Fill(electron_pt);
-		h_Electron_eta_p1->Fill(electron_eta);
+		h_Tau_pt_p1->Fill(tau_pt,Weight2);
+		h_Tau_eta_p1->Fill(tau_eta,Weight2);
+		h_Electron_pt_p1->Fill(electron_pt,Weight2);
+		h_Electron_eta_p1->Fill(electron_eta,Weight2);
 		h_Tau_pt_weighted_p1->Fill(tau_pt, Weight);
 		h_Tau_eta_weighted_p1->Fill(tau_eta, Weight);
 		h_Electron_pt_weighted_p1->Fill(electron_pt, Weight);
@@ -491,12 +495,12 @@ cout<<"Corr"<<endl;
 		}
 
 	 if(ThreeProng) {
-		h_leading_lepton_pt_p3->Fill(leading_lepton_pt);
+		h_leading_lepton_pt_p3->Fill(leading_lepton_pt,Weight2);
 		h_leading_lepton_pt_weighted_p3->Fill(leading_lepton_pt, Weight);
-		h_Tau_pt_p3->Fill(tau_pt);
-		h_Tau_eta_p3->Fill(tau_eta);
-		h_Electron_pt_p3->Fill(electron_pt);
-		h_Electron_eta_p3->Fill(electron_eta);
+		h_Tau_pt_p3->Fill(tau_pt,Weight2);
+		h_Tau_eta_p3->Fill(tau_eta,Weight2);
+		h_Electron_pt_p3->Fill(electron_pt,Weight2);
+		h_Electron_eta_p3->Fill(electron_eta,Weight2);
 		h_Tau_pt_weighted_p3->Fill(tau_pt, Weight);
 		h_Tau_eta_weighted_p3->Fill(tau_eta, Weight);
 		h_Electron_pt_weighted_p3->Fill(electron_pt, Weight);
@@ -590,16 +594,41 @@ cout<<"Corr"<<endl;
             if ((Jet_btagDeepFlavB[j] > 0.2783) && (temp < Phi_mbJets))   {Phi_mbJets = temp;}
           }//end if
         }//endfor
+	if(OneProng){
+		h_dR_allJets_p1->Fill(dR_allJets,Weight);
+		h_dR_lbJets_p1->Fill(dR_lbJets,Weight);
+		h_dR_mbJets_p1->Fill(dR_mbJets,Weight);
+		h_Apl_allJets_p1->Fill(Apl_allJets,Weight);
+		h_Apl_lbJets_p1->Fill(Apl_lbJets,Weight);
+		h_Apl_mbJets_p1->Fill(Apl_mbJets,Weight);
+		h_Phi_allJets_p1->Fill(Phi_allJets,Weight);
+		h_Phi_lbJets_p1->Fill(Phi_allJets,Weight);
+		h_Phi_mbJets_p1->Fill(Phi_allJets,Weight);
+		}
+	if(ThreeProng){
+		h_dR_allJets_p3->Fill(dR_allJets,Weight);
+		h_dR_lbJets_p3->Fill(dR_lbJets,Weight);
+		h_dR_mbJets_p3->Fill(dR_mbJets,Weight);
+		h_Apl_allJets_p3->Fill(Apl_allJets,Weight);
+		h_Apl_lbJets_p3->Fill(Apl_lbJets,Weight);
+		h_Apl_mbJets_p3->Fill(Apl_mbJets,Weight);
+		h_Phi_allJets_p3->Fill(Phi_allJets,Weight);
+		h_Phi_lbJets_p3->Fill(Phi_allJets,Weight);
+		h_Phi_mbJets_p3->Fill(Phi_allJets,Weight);
+		}
+
+
+
 
         if (Tau_idx > -1 && electron_idx > -1){
             invMass = (*(Tau_p4) + *(Electron_p4)).M();
 	    if(OneProng){
-		    h_Tau_Electron_invariant_mass_p1->Fill(invMass);
-		    h_Tau_Electron_invariant_mass_weighted_p1->Fill(invMass);
+		    h_Tau_Electron_invariant_mass_p1->Fill(invMass,Weight2);
+		    h_Tau_Electron_invariant_mass_weighted_p1->Fill(invMass,Weight);
 		    }
 	    if(ThreeProng){
-		    h_Tau_Electron_invariant_mass_p3->Fill(invMass);
-		    h_Tau_Electron_invariant_mass_weighted_p3->Fill(invMass);
+		    h_Tau_Electron_invariant_mass_p3->Fill(invMass,Weight2);
+		    h_Tau_Electron_invariant_mass_weighted_p3->Fill(invMass,Weight);
 		    }
         }       
         tout->Fill();
