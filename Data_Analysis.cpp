@@ -172,7 +172,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 	bool OneProng=false, ThreeProng=false;
         Int_t Tau_idx = -1;
         for (UInt_t j = 0; j < nTau; j++){
-            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=16)){ //VLoose e- Tight mu Medium jet
+            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=8 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=16)){ //Loose e- Tight mu Medium jet
 		if (Tau_decayMode[j]<=2) {OneProng=true;}
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
 		if (!(OneProng || ThreeProng)) {continue;}
@@ -209,7 +209,11 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
         for (size_t j = 0; j < nJet; j++){
           if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4)))
             {
-	    if (MainBjet_p4->DeltaR(*Tau_p4) > 0.4 && MainBjet_p4->DeltaR(*Electron_p4) > 0.4) njets++;
+	    TLorentzVector *Tjet_p4 = new TLorentzVector();
+	    Tjet_p4->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
+	    if((Tjet_p4->DeltaR(*Tau_p4)<0.4) || (Tjet_p4->DeltaR(*Electron_p4)<0.4)) {delete Tjet_p4; continue;}
+	    else {delete Tjet_p4;}
+	    njets++;
 	    if (Jet_btagDeepFlavB[j] < 0.0490) JetsNotB++;
 	    if (Jet_btagDeepFlavB[j] > 0.0490)	Nloose++;
 	    if (Jet_btagDeepFlavB[j] > 0.2783)	Nmedium++;
@@ -241,14 +245,14 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 		h_MediumJets_p1->Fill(Nmedium);
 		h_TightJets_p1->Fill(Ntight);
 		h_acopla_etau_p1->Fill(Acopl_etau);
-		h_NJets_p1->Fill(njets,Weight);
+		h_NJets_p1->Fill(njets);
 		}
         if(ThreeProng){
 		h_LooseJets_p3->Fill(Nloose);
 		h_MediumJets_p3->Fill(Nmedium);
 		h_TightJets_p3->Fill(Ntight);
 		h_acopla_etau_p3->Fill(Acopl_etau);
-		h_NJets_p3->Fill(njets,Weight);
+		h_NJets_p3->Fill(njets);
 		}
 	if(OneProng) {Nprongs=1;}
 	if(ThreeProng) {Nprongs=3;}
@@ -300,9 +304,12 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 	bool ok1=false,ok2=false ,ok3=false;
 	for (size_t j = 0; j < nJet; j++){
 		if (j==id_m_jet) continue;
+		TLorentzVector *Tjet_p4 = new TLorentzVector();
+	        Tjet_p4->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
+	        if((Tjet_p4->DeltaR(*Tau_p4)<0.4) || (Tjet_p4->DeltaR(*Electron_p4)<0.4)) {delete Tjet_p4; continue;}
+	        
                 if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4))){
-		 TLorentzVector *tempJet = new TLorentzVector();
-		 tempJet->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
+		 TLorentzVector *tempJet = Tjet_p4;
 		 double temp=OppositeBjet_p4->DeltaR(*tempJet);
 
 		 TVector3 A(tempJet->X(),tempJet->Y(),tempJet->Z());	
@@ -322,15 +329,20 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 			}
   
 			
-		 delete tempJet;	
+		 delete Tjet_p4;	
 		 }//end if
         	}//end for
 
 //dphi
 	Phi_allJets=999, Phi_lbJets=999, Phi_mbJets=999;
 	for (size_t j = 0; j < nJet; j++){
-			if(j==id_m_jet) continue;
-			if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4))){
+		if(j==id_m_jet) continue;
+
+		TLorentzVector *Tjet_p4 = new TLorentzVector();
+	        Tjet_p4->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
+	       	if((Tjet_p4->DeltaR(*Tau_p4)<0.4) || (Tjet_p4->DeltaR(*Electron_p4)<0.4)) {delete Tjet_p4; continue;}
+	        else {delete Tjet_p4;}
+		if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4))){
 			double temp=Jet_phi[j]-OppositeBjet_p4->Phi();
 			if (temp<-1*M_PI) temp+=2*M_PI;
 			if (temp>M_PI) temp-=2*M_PI;
@@ -339,8 +351,8 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 			if(temp<Phi_allJets) {Phi_allJets=temp;}
 			if((Jet_btagDeepFlavB[j] > 0.0490) && (temp<Phi_lbJets)) {Phi_lbJets=temp;}
 			if((Jet_btagDeepFlavB[j] > 0.2783) && (temp<Phi_mbJets)) {Phi_mbJets=temp;}
-        		 }//end if
-        	}//end for
+		}//end if
+        }//end for
 
 	if(OneProng){
 		h_dR_allJets_p1->Fill(dR_allJets);

@@ -283,12 +283,12 @@ cout<<"Corr"<<endl;
         Int_t Tau_idx = -1;
         for (UInt_t j = 0; j < nTau; j++)
         {
-            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=16)){ //VLoose e- Tight mu Medium jet
+            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=8 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=16)){ //Loose e- Tight mu Medium jet
 		if (Tau_decayMode[j]<=2) {OneProng=true;}
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
 		if (!(OneProng || ThreeProng)) {continue;}
                 Tau_idx = j;
-		double ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});//TODO: check if it is right to scale Energy and then fix 4 momenta;
+		double ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});
                 Tau_p4->SetPtEtaPhiM(Tau_pt[j]*ScaleE, Tau_eta[j], Tau_phi[j], Tau_mass[j]*ScaleE);
                 break;
             }
@@ -302,7 +302,7 @@ cout<<"Corr"<<endl;
         Weight *= pu_correction->evaluate({N_pu_vertices, "nominal"});
 			
 
-	Weight *=Tau_idvse->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"VLoose","nom"});
+	Weight *=Tau_idvse->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"Loose","nom"}); //Loose instead of VL
 	Weight *=Tau_idvsmu->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"Tight","nom"});
 	Weight *=Tau_idvsjet->evaluate({Tau_p4->Pt(),Tau_decayMode[Tau_idx],Tau_genPartFlav[Tau_idx],"Medium","nom","pt"});
    
@@ -352,6 +352,10 @@ cout<<"Corr"<<endl;
         for (size_t j = 0; j < nJet; j++)
         {
             if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6)){
+	    TLorentzVector *Tjet_p4 = new TLorentzVector();
+	    Tjet_p4->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
+	    if((Tjet_p4->DeltaR(*Tau_p4)<0.4) || (Tjet_p4->DeltaR(*Electron_p4)<0.4)) {delete Tjet_p4; continue;}
+	    else {delete Tjet_p4;}
             //correction for pileupID
             int MC_pu = Jet_genJetIdx[j];
             float tempSF=1.,tempEff;
@@ -553,9 +557,12 @@ cout<<"Corr"<<endl;
         {  
           if (j == id_m_jet)
                 continue;
-          if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4))){
-            TLorentzVector *tempJet = new TLorentzVector();
-            tempJet->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
+	 TLorentzVector *Tjet_p4 = new TLorentzVector();
+	 Tjet_p4->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
+	 if((Tjet_p4->DeltaR(*Tau_p4)<0.4) || (Tjet_p4->DeltaR(*Electron_p4)<0.4)) {delete Tjet_p4; continue;}
+	 
+         if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4))){
+            TLorentzVector *tempJet = Tjet_p4;
             double temp = OppositeBjet_p4->DeltaR(*tempJet);
 
             TVector3 A(tempJet->X(), tempJet->Y(), tempJet->Z());
@@ -575,7 +582,7 @@ cout<<"Corr"<<endl;
                 if (tempApl < Apl_mbJets) {Apl_mbJets = tempApl;}
             }
 
-            delete tempJet;
+            delete Tjet_p4;
          }//end if
         } //end for
 
@@ -583,6 +590,10 @@ cout<<"Corr"<<endl;
         Phi_allJets = 999, Phi_lbJets = 999, Phi_mbJets = 999;
         for (size_t j = 0; j < nJet; j++){ 
           if (j == id_m_jet) continue;
+	  TLorentzVector *Tjet_p4 = new TLorentzVector();
+	  Tjet_p4->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
+	  if((Tjet_p4->DeltaR(*Tau_p4)<0.4) || (Tjet_p4->DeltaR(*Electron_p4)<0.4)) {delete Tjet_p4; continue;}
+          else{delete Tjet_p4;}
           if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6) && (Jet_pt[j]>50 || (Jet_puId[j]>=4))){
             double temp = Jet_phi[j] - OppositeBjet_p4->Phi();
             if (temp < -1 * M_PI) temp += 2 * M_PI;
