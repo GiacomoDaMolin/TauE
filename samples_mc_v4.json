@@ -77,21 +77,21 @@
         "N_events": 12336798
     },
     "Santit": {
-        "xs": AAAAAAAAAAAAAAAAAAAAAAAAAAAAA,
+        "xs": 35850,
         "signal": false,
         "dataset": "/ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2/NANOAODSIM",
         "Sum_w": 376234621.7050001,
         "N_events": 11573849
     },
     "St_t": {
-        "xs": AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,
+        "xs": 136020,
         "signal": false,
         "dataset": "/ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM",
         "Sum_w": 400274110.3296001,
         "N_events": 12336798
     },
     "Santit_t": {
-        "xs": 32510,
+        "xs": 80950,
         "signal": false,
         "dataset": "/ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM",
         "Sum_w": 376234621.7050001,

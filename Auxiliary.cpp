@@ -120,6 +120,15 @@ h_TightJets_p3->Sumw2();
 	 h_Phi_lbJets_p3->Sumw2();
 	 h_Phi_mbJets_p3->Sumw2();
 h_acopla_etau_p3->Sumw2();
+h_Electron_pt_from_W->Sumw2();
+ h_Electron_eta_from_W->Sumw2();
+ h_Electron_pt_weighted_from_W->Sumw2();
+ h_Electron_eta_weighted_from_W->Sumw2();
+ h_Tau_pt_from_W=->Sumw2();
+ h_Tau_eta_from_W->Sumw2();
+ h_Tau_pt_weighted_from_W->Sumw2();
+ h_Tau_eta_weighted_from_W->Sumw2();
+
 }
 
 void HistWrite(){
@@ -178,7 +187,14 @@ h_TightJets_p3->Write();
 	 h_Phi_lbJets_p3->Write();
 	 h_Phi_mbJets_p3->Write();
 h_acopla_etau_p3->Write();
-
+h_Electron_pt_from_W->Write();
+ h_Electron_eta_from_W->Write();
+ h_Electron_pt_weighted_from_W->Write();
+ h_Electron_eta_weighted_from_W->Write();
+ h_Tau_pt_from_W->Write();
+ h_Tau_eta_from_W->Write();
+ h_Tau_pt_weighted_from_W->Write();
+ h_Tau_eta_weighted_from_W->Write();
 
 }
 #endif // Auxiliary_cpp
