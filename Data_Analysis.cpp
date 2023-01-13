@@ -172,7 +172,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 	bool OneProng=false, ThreeProng=false;
         Int_t Tau_idx = -1;
         for (UInt_t j = 0; j < nTau; j++){
-            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=2 && Tau_idDeepTau2017v2p1VSjet[j]>=64)){ //VLoose e- L mu VT jet
+            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=32)){ //VLoose e- T mu T jet
 		if (Tau_decayMode[j]<=2) {OneProng=true;}
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
 		if (!(OneProng || ThreeProng)) {continue;}

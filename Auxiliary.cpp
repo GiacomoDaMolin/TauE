@@ -124,7 +124,7 @@ h_Electron_pt_from_W->Sumw2();
  h_Electron_eta_from_W->Sumw2();
  h_Electron_pt_weighted_from_W->Sumw2();
  h_Electron_eta_weighted_from_W->Sumw2();
- h_Tau_pt_from_W=->Sumw2();
+ h_Tau_pt_from_W->Sumw2();
  h_Tau_eta_from_W->Sumw2();
  h_Tau_pt_weighted_from_W->Sumw2();
  h_Tau_eta_weighted_from_W->Sumw2();
