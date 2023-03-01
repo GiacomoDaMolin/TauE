@@ -71,12 +71,22 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
     // collect the triggger Ids
     Int_t Tau_charge[MAX_ARRAY_SIZE], Electron_charge[MAX_ARRAY_SIZE];
     Bool_t Electron_mvaFall17V2Iso_WP90[MAX_ARRAY_SIZE];
+    Float_t Electron_ip3d[MAX_ARRAY_SIZE], Electron_sip3d[MAX_ARRAY_SIZE], Electron_dxy[MAX_ARRAY_SIZE], Electron_dz[MAX_ARRAY_SIZE];
     tin->SetBranchStatus("Tau_charge", 1);
     tin->SetBranchStatus("Electron_charge", 1);
     tin->SetBranchStatus("Electron_mvaFall17V2Iso_WP90", 1);
     tin->SetBranchAddress("Electron_mvaFall17V2Iso_WP90", &Electron_mvaFall17V2Iso_WP90);
     tin->SetBranchAddress("Tau_charge", &Tau_charge);
     tin->SetBranchAddress("Electron_charge", &Electron_charge);
+
+    tin->SetBranchStatus("Electron_ip3d", 1);
+    tin->SetBranchStatus("Electron_sip3d", 1);
+    tin->SetBranchStatus("Electron_dxy", 1);
+    tin->SetBranchStatus("Electron_dz", 1);
+    tin->SetBranchAddress("Electron_dz", &Electron_dz);
+    tin->SetBranchAddress("Electron_ip3d", &Electron_ip3d);
+    tin->SetBranchAddress("Electron_sip3d", &Electron_sip3d);
+    tin->SetBranchAddress("Electron_dxy", &Electron_dxy);
 
     // Jet tagging , FlavB is the recomennded one, DeepB was used by Anup
     Float_t Jet_btagDeepFlavB[MAX_ARRAY_SIZE], Jet_btagDeepB[MAX_ARRAY_SIZE];
@@ -172,7 +182,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 	bool OneProng=false, ThreeProng=false;
         Int_t Tau_idx = -1;
         for (UInt_t j = 0; j < nTau; j++){
-            if ((Tau_pt[j]>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=32)){ //VLoose e- T mu T jet
+            if ((Tau_pt[j]>22. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=8 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=32)){ //Loose e- T mu T jet
 		if (Tau_decayMode[j]<=2) {OneProng=true;}
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
 		if (!(OneProng || ThreeProng)) {continue;}
@@ -185,7 +195,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 
         Int_t electron_idx = -1;
         for (UInt_t j = 0; j < nElectron; j++){
-            if ((Electron_pt[j]>35 && abs(Electron_eta[j])<2.4 && Electron_mvaFall17V2Iso_WP90[j])){
+            if ((Electron_pt[j]>35 && abs(Electron_eta[j])<2.4 && Electron_mvaFall17V2Iso_WP90[j] && abs(Electron_dxy[j])<0.2 && abs(Electron_dz[j])<0.5)){
 		if((abs(Electron_eta[j])>1.44) && (abs(Electron_eta[j])<1.57)) {continue;}
                 Electron_p4->SetPtEtaPhiM(Electron_pt[j], Electron_eta[j], Electron_phi[j], Electron_mass[j]);
 		if(Electron_p4->DeltaR(*Tau_p4)<0.4) {continue;}
@@ -198,7 +208,7 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
         }
         bool selection = ((Tau_idx > -1) && (electron_idx > -1));
         // check the seleected objects for opposite charge
-        selection = selection && (Tau_charge[Tau_idx] * Electron_charge[electron_idx]) < 0;
+        selection = selection && ((Tau_charge[Tau_idx] * Electron_charge[electron_idx]) < 0);
         
         // the tight working point is 0.71, medium 0.2783, loose 0.0490
         Float_t jet_btag_deepFlav_wp = 0.2783;
@@ -282,7 +292,10 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 		h_Tau_eta_weighted_p1->Fill(tau_eta);
 		h_Electron_pt_weighted_p1->Fill(electron_pt);
 		h_Electron_eta_weighted_p1->Fill(electron_eta);
-		h_NJets_p1->Fill(njets);
+		b_pt_p1->Fill(MainBjet_p4->Pt());
+   		jethole_p1->Fill(MainBjet_p4->Eta(),MainBjet_p4->Phi());
+   		tauhole_p1->Fill(Tau_p4->Eta(),Tau_p4->Phi());
+   		ehole_p1->Fill(Electron_p4->Phi(),Electron_p4->Phi());
 		}
 	if(ThreeProng){
 		h_leading_lepton_pt_p3->Fill(leading_lepton_pt);
@@ -295,13 +308,17 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 		h_Tau_eta_weighted_p3->Fill(tau_eta);
 		h_Electron_pt_weighted_p3->Fill(electron_pt);
 		h_Electron_eta_weighted_p3->Fill(electron_eta);
-		h_NJets_p3->Fill(njets);
+		b_pt_p3->Fill(MainBjet_p4->Pt());
+   		jethole_p3->Fill(MainBjet_p4->Eta(),MainBjet_p4->Phi());
+   		tauhole_p3->Fill(Tau_p4->Eta(),Tau_p4->Phi());
+   		ehole_p3->Fill(Electron_p4->Phi(),Electron_p4->Phi());
 		}
 
         
 	dR_allJets=999, dR_lbJets=999, dR_mbJets=999;
 	Apl_allJets=1.1,Apl_lbJets=1.1,Apl_mbJets=1.1;
 	bool ok1=false,ok2=false ,ok3=false;
+
 	for (size_t j = 0; j < nJet; j++){
 		if (j==id_m_jet) continue;
 		TLorentzVector *Tjet_p4 = new TLorentzVector();
@@ -377,7 +394,9 @@ void DataAnalysis(string inputFile, string ofile, bool IsFirstDataSet)
 		h_Phi_mbJets_p3->Fill(Phi_mbJets);
 		}
 
-
+         h_e_3dsig->Fill(Electron_sip3d[electron_idx]); 
+         h_e_3d->Fill(Electron_ip3d[electron_idx]);
+         h_e_dxy->Fill(abs(Electron_dxy[electron_idx]));
 
         if (Tau_idx > -1 && electron_idx > -1)
         {

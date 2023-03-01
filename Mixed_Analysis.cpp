@@ -100,8 +100,9 @@ cout<<"Call completed!"<<endl;
 
     // get gen quantities
     Int_t Tau_genPartIdx[MAX_ARRAY_SIZE], Electron_genPartIdx[MAX_ARRAY_SIZE];
-    Int_t GenPart_pdgId[GEN_MAX_ARRAY_SIZE], GenPart_genPartIdxMother[GEN_MAX_ARRAY_SIZE], Jet_genJetIdx[MAX_ARRAY_SIZE];
+    Int_t GenPart_pdgId[GEN_MAX_ARRAY_SIZE], GenPart_genPartIdxMother[GEN_MAX_ARRAY_SIZE], Jet_genJetIdx[MAX_ARRAY_SIZE],GenPart_statusFlags[GEN_MAX_ARRAY_SIZE];
     UChar_t Tau_genPartFlav[MAX_ARRAY_SIZE], Electron_genPartFlav[MAX_ARRAY_SIZE];
+    Float_t Electron_ip3d[MAX_ARRAY_SIZE], Electron_sip3d[MAX_ARRAY_SIZE], Electron_dxy[MAX_ARRAY_SIZE], Electron_dz[MAX_ARRAY_SIZE],GenPart_pt[GEN_MAX_ARRAY_SIZE];
     UInt_t nGenPart;
     tin->SetBranchStatus("Electron_genPartIdx", 1);
     tin->SetBranchStatus("Electron_genPartFlav", 1);
@@ -111,6 +112,8 @@ cout<<"Call completed!"<<endl;
     tin->SetBranchStatus("GenPart_genPartIdxMother", 1);
     tin->SetBranchStatus("nGenPart", 1);
     tin->SetBranchStatus("Jet_genJetIdx",1);
+    tin->SetBranchStatus("GenPart_pt", 1);
+    tin->SetBranchStatus("GenPart_statusFlags", 1);
     tin->SetBranchAddress("nGenPart", &nGenPart);
     tin->SetBranchAddress("Electron_genPartIdx", &Electron_genPartIdx);
     tin->SetBranchAddress("Electron_genPartFlav", &Electron_genPartFlav);
@@ -119,6 +122,17 @@ cout<<"Call completed!"<<endl;
     tin->SetBranchAddress("GenPart_pdgId", &GenPart_pdgId);
     tin->SetBranchAddress("GenPart_genPartIdxMother", &GenPart_genPartIdxMother);
     tin->SetBranchAddress("Jet_genJetIdx",&Jet_genJetIdx);
+    tin->SetBranchAddress("GenPart_pt", &GenPart_pt);
+    tin->SetBranchAddress("GenPart_statusFlags",&GenPart_statusFlags);
+
+    tin->SetBranchStatus("Electron_ip3d", 1);
+    tin->SetBranchStatus("Electron_sip3d", 1);
+    tin->SetBranchStatus("Electron_dxy", 1);
+    tin->SetBranchStatus("Electron_dz", 1);
+    tin->SetBranchAddress("Electron_dz", &Electron_dz);
+    tin->SetBranchAddress("Electron_ip3d", &Electron_ip3d);
+    tin->SetBranchAddress("Electron_sip3d", &Electron_sip3d);
+    tin->SetBranchAddress("Electron_dxy", &Electron_dxy);
     // collect the trigger information
     Bool_t HLT_Ele32_WPTight_Gsf;
     tin->SetBranchStatus("HLT_Ele32_WPTight_Gsf", 1);
@@ -162,6 +176,11 @@ cout<<"Call completed!"<<endl;
     tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSmu", &Tau_idDeepTau2017v2p1VSmu);
     tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSjet", &Tau_idDeepTau2017v2p1VSjet);   
     tin->SetBranchAddress("Tau_idDeepTau2017v2p1VSe", &Tau_idDeepTau2017v2p1VSe);
+ 
+    //L1
+    Float_t L1PreFiringWeight_Nom;
+    tin->SetBranchStatus("L1PreFiringWeight_Nom", 1);
+    tin->SetBranchAddress("L1PreFiringWeight_Nom", &L1PreFiringWeight_Nom);
 
     // pu stuff
     Float_t N_pu_vertices;
@@ -271,7 +290,7 @@ cout<<"Corr"<<endl;
 
     trun_out->Fill(); // we already called trun->GetEntry(0);
 
-    size_t found = ofile.find_last_of("/");
+    /*size_t found = ofile.find_last_of("/");
     string oname=ofile.substr(found+1);
     string path=ofile.substr(0,found);
     string Tauname=path+"/Tau_"+oname;
@@ -315,10 +334,10 @@ cout<<"Corr"<<endl;
         trun_outT->Branch("xs", &crossSection);
         trun_outT->Branch("nEv", &n_events);
 	trun_outT->Fill();
-	}
+	}*/
     fout->cd();
     
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (UInt_t i = 0; i <nEv; i++){
         tin->GetEntry(i); //cout<<"kill me"<<endl;
         if (i % 100000 == 0)
@@ -337,7 +356,7 @@ cout<<"Corr"<<endl;
              double ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});
              Tau_p4->SetPtEtaPhiM(Tau_pt[j]*ScaleE, Tau_eta[j], Tau_phi[j], Tau_mass[j]*ScaleE);
             
-            if ((Tau_p4->Pt()>20. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=4 && Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=32)){ //VLoose e- T mu T jet
+            if ((Tau_p4->Pt()>22. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=8&& Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=32)){ //Loose e- T mu T jet
 		if (Tau_decayMode[j]<=2) {OneProng=true;}
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
 		if (!(OneProng || ThreeProng)) {continue;}
@@ -350,17 +369,22 @@ cout<<"Corr"<<endl;
             continue;
         }
         Weight = getWeight(IntLuminosity, crossSection, genWeight, genEventSumw);
+	Weight *=  getTopPtWeight(GenPart_pdgId,GenPart_statusFlags,GenPart_pt,nGenPart);
 	double Weight2=Weight;
+	Weight*=L1PreFiringWeight_Nom;
         Weight *= pu_correction->evaluate({N_pu_vertices, "nominal"});
 			
-	Weight *=Tau_idvse->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"VLoose","nom"}); //Loose instead of VL
+	Weight *=Tau_idvse->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"Loose","nom"}); //Loose instead of VL
+	int grr=Tau_genPartFlav[Tau_idx];
+	cout<<"For eles, I got flavor "<< grr << " and I multiply by the weight "<< Tau_idvse->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"Loose","nom"})<<endl;
 	Weight *=Tau_idvsmu->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"Tight","nom"});
-	Weight *=Tau_idvsjet->evaluate({Tau_p4->Pt(),Tau_decayMode[Tau_idx],Tau_genPartFlav[Tau_idx],"Tight","nom","pt"});
+	cout<<"For Mus, I got flavor "<< grr << " and I multiply by the weight "<< Tau_idvse->evaluate({abs(Tau_eta[Tau_idx]),Tau_genPartFlav[Tau_idx],"Loose","nom"})<<endl;
+	Weight *=Tau_idvsjet->evaluate({Tau_p4->Pt(), Tau_decayMode[Tau_idx],Tau_genPartFlav[Tau_idx],"Tight","nom","pt"});
   
         Int_t electron_idx = -1;
         for (UInt_t j = 0; j < nElectron; j++)
         {
-            if ((Electron_pt[j] > 35 && abs(Electron_eta[j]) < 2.4 && Electron_mvaFall17V2Iso_WP90[j]))
+            if ((Electron_pt[j] > 35 && abs(Electron_eta[j]) < 2.4 && Electron_mvaFall17V2Iso_WP90[j]  && abs(Electron_dxy[j])<0.2 && abs(Electron_dz[j])<0.5))
             {
 		if((abs(Electron_eta[j])>1.44) && (abs(Electron_eta[j])<1.57)) {continue;}
 
@@ -374,11 +398,11 @@ cout<<"Corr"<<endl;
             n_dropped++;
             continue;
         }
-        if(Signal){
+        /*if(Signal){
 		bool secondistau=isFromTau(nGenPart, GenPart_pdgId, GenPart_genPartIdxMother, Electron_genPartIdx[electron_idx]);
 		if (secondistau){FromTau=true;}
 		else {FromTau=false;}
-		}
+		}*/
 
         Weight *= electron_id->evaluate({"2018", "sf", "wp90iso", abs(Electron_eta[electron_idx]), Electron_pt[electron_idx]}); 
         Weight *= electron_id->evaluate({"2018", "sf", "RecoAbove20", abs(Electron_eta[electron_idx]), Electron_pt[electron_idx]});
@@ -434,7 +458,7 @@ cout<<"Corr"<<endl;
               njet_in_collection.push_back(j);
               flavor.push_back(abs(Jet_hadronFlavour[j]));
               tagged.push_back((Jet_btagDeepFlavB[j] > jet_btag_deepFlav_wp));
-	      if (MainBjet_p4->DeltaR(*Tau_p4) > 0.4 && MainBjet_p4->DeltaR(*Electron_p4) > 0.4) njets++;
+		njets++;
         
 	      if (Jet_btagDeepFlavB[j] < 0.0490) JetsNotB++;
 	      if (Jet_btagDeepFlavB[j] > 0.0490)
@@ -549,7 +573,10 @@ cout<<"Corr"<<endl;
 		h_Tau_eta_weighted_p1->Fill(tau_eta, Weight);
 		h_Electron_pt_weighted_p1->Fill(electron_pt, Weight);
 		h_Electron_eta_weighted_p1->Fill(electron_eta, Weight);
-		h_NJets_p1->Fill(njets,Weight);
+		b_pt_p1->Fill(MainBjet_p4->Pt(), Weight);
+   		jethole_p1->Fill(MainBjet_p4->Eta(),MainBjet_p4->Phi(),Weight);
+   		tauhole_p1->Fill(Tau_p4->Eta(),Tau_p4->Phi(),Weight);
+   		ehole_p1->Fill(Electron_p4->Phi(),Electron_p4->Phi(),Weight);
 		}
 
 	 if(ThreeProng) {
@@ -563,10 +590,13 @@ cout<<"Corr"<<endl;
 		h_Tau_eta_weighted_p3->Fill(tau_eta, Weight);
 		h_Electron_pt_weighted_p3->Fill(electron_pt, Weight);
 		h_Electron_eta_weighted_p3->Fill(electron_eta, Weight);
-		h_NJets_p1->Fill(njets,Weight);
+		b_pt_p3->Fill(MainBjet_p4->Pt(), Weight);
+   		jethole_p3->Fill(MainBjet_p4->Eta(),MainBjet_p4->Phi(),Weight);
+   		tauhole_p3->Fill(Tau_p4->Eta(),Tau_p4->Phi(),Weight);
+   		ehole_p3->Fill(Electron_p4->Phi(),Electron_p4->Phi(),Weight);
 		}
         // only for signal
-        if (Signal)
+        /*if (Signal)
         {
             // cross check which index the objects have that actually originate from the W
             size_t nTau_p4 = 0, nElectron_p4 = 0;
@@ -603,7 +633,7 @@ cout<<"Corr"<<endl;
                         non_matching_electron++;
                 }
             }
-        }
+        }*/
         // END only for signal
 
         dR_allJets = 999, dR_lbJets = 999, dR_mbJets = 999;
@@ -682,6 +712,11 @@ cout<<"Corr"<<endl;
 		h_Phi_mbJets_p3->Fill(Phi_mbJets,Weight);
 		}
 
+	
+         h_e_3dsig->Fill(Electron_sip3d[electron_idx],Weight); 
+         h_e_3d->Fill(Electron_ip3d[electron_idx],Weight);
+         h_e_dxy->Fill(abs(Electron_dxy[electron_idx]),Weight);
+	
         if (Tau_idx > -1 && electron_idx > -1){
             invMass = (*(Tau_p4) + *(Electron_p4)).M();
 	    if(OneProng){
@@ -694,8 +729,9 @@ cout<<"Corr"<<endl;
 		    }
         }
      
-        if(Signal && FromTau) {toutT->Fill();}
-	else {tout->Fill();}
+        /*if(Signal && FromTau) {toutT->Fill();}
+	else {tout->Fill();}*/
+	tout->Fill();
     }
 
     delete fecorr_trig;
@@ -719,7 +755,7 @@ cout<<"Corr"<<endl;
 
     fout->Write();
     fout->Close();
-    if (Signal) {
+   /* if (Signal) {
 	cout<<"Saving Tau File!"<<endl;
 	foutT->cd();
 	toutT->Write();
@@ -727,7 +763,7 @@ cout<<"Corr"<<endl;
 	foutT->Write();
 	foutT->Close();
 	}
-   else cout<<"Not writing tree in Tau File"<<endl;
+   else cout<<"Not writing tree in Tau File"<<endl;*/
 }
 
 int main(int argc, char **argv)

@@ -1,6 +1,9 @@
 #ifndef Histodef_cpp
 #define Histodef_cpp
 #include "TH1.h"
+#include <TH2.h>
+#include <vector>
+using std::vector;
 
     // Define the histogram objects with TAU with 1 PRONG
     TH1D* h_Tau_pt_p1 = new TH1D("h_Tau_pt_p1","h_Tau_pt",50,0,200);
@@ -79,10 +82,22 @@
         TH1D * h_Electron_pt_weighted_from_W= new TH1D("h_Electron_pt_from_W_weighted", "h_Electron_pt_from_W_weighted", 40, 0, 200);
         TH1D * h_Electron_eta_weighted_from_W= new TH1D("h_Electron_eta_from_W_weighted", "Electron_eta_from_W_weighted", 50, -5, 5);
         
-	TH1D * h_Tau_pt_from_W= new TH1D("h_Tau_pt_p1","h_Tau_pt",50,0,200);
+	TH1D * h_Tau_pt_from_W= new TH1D("h_Tau_pt_from_W","h_Tau_pt",50,0,200);
         TH1D * h_Tau_eta_from_W= new TH1D("h_Tau_eta_from_W", "Tau_eta_from_W", 50, -5, 5);
         TH1D * h_Tau_pt_weighted_from_W= new TH1D("h_Tau_pt_from_W_weighted", "h_Tau_pt_from_W_weighted", 50, 0, 200);
         TH1D * h_Tau_eta_weighted_from_W= new TH1D("h_Tau_eta_from_W_weighted", "Tau_eta_from_W_weighted", 50, -5, 5);
 	
+   TH1D* h_e_3dsig = new TH1D("h_e_3dsig","h_e_3dsig",30,0,30);
+   TH1D* h_e_3d = new TH1D("h_e_3d","h_e_3d",30,0,0.06);
+   TH1D * h_e_dxy =new TH1D("h_e_dxy","h_e_dxy",30,0, 0.03);
+
+TH1D *b_pt_p1=new TH1D("bJet_pt_p1","bJet_pt_p1",40,25,425);
+   TH2D *jethole_p1=new TH2D("jethole_p1","jethole_p1;eta; phi",24,-2.4,2.4,63,-3.14,3.14);
+   TH2D *tauhole_p1=new TH2D("tauhole_p1","tauhole_p1;eta; phi",24,-2.4,2.4,63,-3.14,3.14);
+   TH2D *ehole_p1=new TH2D("ehole_p1","ehole_p1;eta; phi",24,-2.4,2.4,63,-3.14,3.14);
+TH1D *b_pt_p3=new TH1D("bJet_pt_p3","bJet_pt_p3",40,25,425);
+   TH2D *jethole_p3=new TH2D("jethole_p3","jethole_p3;eta; phi",24,-2.4,2.4,63,-3.14,3.14);
+   TH2D *tauhole_p3=new TH2D("tauhole_p3","tauhole_p3;eta; phi",24,-2.4,2.4,63,-3.14,3.14);
+   TH2D *ehole_p3=new TH2D("ehole_p3","ehole_p3;eta; phi",24,-2.4,2.4,63,-3.14,3.14);
 
 #endif // Histodef_cpp
