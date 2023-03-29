@@ -213,7 +213,7 @@ cout<<"Call completed!"<<endl;
     auto b_mistag= btag_c_set->at("deepJet_incl"); //only for light jets
     auto pu_correction = pu_c_set->at("Collisions18_UltraLegacy_goldenJSON");
     
-    TFile *fecorr_trig = new TFile("/afs/cern.ch/user/g/gdamolin/public/Riccardo_egammaTriggerEfficiency_2018_20200422.root");
+    TFile *fecorr_trig = new TFile("/afs/cern.ch/user/g/gdamolin/public/trig_2018.root");
     TH2F * EleTrigHisto= static_cast<TH2F *>(fecorr_trig->Get("EGamma_SF2D"));
 
     TFile *fb_eff = new TFile("/afs/cern.ch/user/g/gdamolin/public/Beff_puLoose.root");
@@ -267,7 +267,7 @@ cout<<"Call completed!"<<endl;
     else for(int i=0;i<observables.size();i++) Histos.push_back(temp);
     
     //get histos nominal values
-    temp= new TH1D(observables[0].c_str(),observables[0].c_str(),44,0,220);
+    temp= new TH1D(observables[0].c_str(),observables[0].c_str(),20,22,202);
     Histos[0] = (TH1D*)temp->Clone();
     temp = new TH1D(observables[1].c_str(),observables[1].c_str(),40, 0, 200);
     Histos[1] = (TH1D*)temp->Clone();
@@ -280,7 +280,7 @@ cout<<"Call completed!"<<endl;
     temp = new TH1D(observables[5].c_str(),observables[5].c_str(),12,0,12);
     Histos[5] = (TH1D*)temp->Clone();
     
-    int auxindex=5;
+    int auxindex=observables.size()-1;
     //here loop on systematics, clone the histo and do your things
     if(systematics){
     	for(int i=0; i<systs.size(); i++){
@@ -310,10 +310,10 @@ cout<<"Call completed!"<<endl;
         Int_t Tau_idx = -1;
         for (UInt_t j = 0; j < nTau; j++){
 		if (Tau_decayMode[j]>2 && Tau_decayMode[j]<10) continue;
-		if(!Data){
-			     double ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});
-			     Tau_p4->SetPtEtaPhiM(Tau_pt[j]*ScaleE, Tau_eta[j], Tau_phi[j], Tau_mass[j]*ScaleE);
-			    }
+		 double ScaleE=1.;
+		if(!Data){ScaleE=Tau_Escale->evaluate({Tau_pt[j],abs(Tau_eta[j]),Tau_decayMode[j],Tau_genPartFlav[j],"DeepTau2017v2p1","nom"});}
+
+		Tau_p4->SetPtEtaPhiM(Tau_pt[j]*ScaleE, Tau_eta[j], Tau_phi[j], Tau_mass[j]*ScaleE);
             if ((Tau_p4->Pt()>22. && abs(Tau_eta[j])<2.3)&&(Tau_idDeepTau2017v2p1VSe[j]>=8&& Tau_idDeepTau2017v2p1VSmu[j]>=8 && Tau_idDeepTau2017v2p1VSjet[j]>=32)){ //Loose e- T mu T jet
 		if (Tau_decayMode[j]<=2) {OneProng=true;}
 		if (Tau_decayMode[j]>=10) {ThreeProng=true;}
@@ -325,7 +325,7 @@ cout<<"Call completed!"<<endl;
         if (Tau_idx==-1)  { n_dropped++; continue;}	 
         Int_t electron_idx = -1;
         for (UInt_t j = 0; j < nElectron; j++){
-            if ((Electron_pt[j] > 35 && abs(Electron_eta[j]) < 2.4 && Electron_mvaFall17V2Iso_WP90[j] && abs(Electron_dxy[j])<0.2 && abs(Electron_dz[j])<0.5)){
+            if ((Electron_pt[j] > 35 && abs(Electron_eta[j]) < 2.4 && Electron_mvaFall17V2Iso_WP90[j])){
 		if((abs(Electron_eta[j])>1.44) && (abs(Electron_eta[j])<1.57)) {continue;} //remove electrons in the acceptance break
                 Electron_p4->SetPtEtaPhiM(Electron_pt[j], Electron_eta[j], Electron_phi[j], Electron_mass[j]);
                 if (Electron_p4->DeltaR(*Tau_p4) < 0.4) {continue;}
@@ -344,7 +344,7 @@ cout<<"Call completed!"<<endl;
 	vector<int> njet_in_collection; vector<int> flavor; vector<bool> tagged;
 	double t_weight=1.;
         for (size_t j = 0; j < nJet; j++) {
-            if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>25 && (Jet_jetId[j]==2 || Jet_jetId[j]==6)){
+            if((abs(Jet_eta[j]) < 2.4) && Jet_pt[j]>30 && (Jet_jetId[j]==2 || Jet_jetId[j]==6)){
 	    TLorentzVector *Tjet_p4 = new TLorentzVector();
 	    Tjet_p4->SetPtEtaPhiM(Jet_pt[j], Jet_eta[j], Jet_phi[j], Jet_mass[j]);
 	    if((Tjet_p4->DeltaR(*Tau_p4)<0.4) || (Tjet_p4->DeltaR(*Electron_p4)<0.4)) {delete Tjet_p4; continue;}
